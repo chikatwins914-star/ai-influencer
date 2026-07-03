@@ -1,0 +1,11 @@
+services:
+  api:
+    build: .
+    ports:
+      - "4000:4000"
+    env_file:
+      - .env
+    volumes:
+      - ./database:/app/database
+      - ./assets:/app/assets
+    restart: unless-stopped

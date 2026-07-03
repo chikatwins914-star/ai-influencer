@@ -1,0 +1,247 @@
+// AI Influencer Operations System — Database Schema
+// SQLite for local/single-tenant operation. Swap provider for Postgres later if needed.
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────
+// Character: the fixed identity of the AI persona.
+// isAI is intentionally non-optional — every character must be
+// flagged for automatic disclosure-label insertion downstream.
+// ─────────────────────────────────────────────
+model Character {
+  id            String   @id @default(cuid())
+  name          String
+  isAI          Boolean  @default(true) // never allow false in this system
+  age           Int
+  heightCm      Int
+  weightKg      Int
+  personality   String // free text
+  hobbies       String // JSON-encoded string array
+  speechStyle   String
+  favoriteFoods String // JSON-encoded string array
+  dislikedFoods String // JSON-encoded string array
+  trainingRoutine String
+  tennisHistory String
+  brandColor    String
+  fashionStyle  String
+  hairStyle     String
+  faceFeatures  String
+  eyeDescription String
+  skinDescription String
+  accessories   String // JSON-encoded string array
+  worldview     String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  contentAssets  ContentAsset[]
+  captions       Caption[]
+  calendarEntries CalendarEntry[]
+
+  @@map("characters")
+}
+
+enum ContentGenre {
+  GYM
+  MORNING_ROUTINE
+  COFFEE
+  TENNIS
+  BEACH
+  MIRROR_SELFIE
+  HEALTHY_FOOD
+  TRAVEL
+  CASUAL_DATE
+  BEHIND_THE_SCENES
+  ROOM_SELFIE
+  LIBRARY_STUDY
+}
+
+enum ContentType {
+  IMAGE
+  VIDEO_REEL
+  STORY
+}
+
+enum ContentStatus {
+  PLANNED
+  PROMPT_GENERATED
+  ASSET_GENERATED
+  REVIEWED
+  SCHEDULED
+  PUBLISHED
+  REJECTED
+}
+
+// ─────────────────────────────────────────────
+// ContentAsset: one generated (or to-be-generated) image/video/story unit
+// ─────────────────────────────────────────────
+model ContentAsset {
+  id           String        @id @default(cuid())
+  characterId  String
+  character    Character     @relation(fields: [characterId], references: [id])
+  type         ContentType
+  genre        ContentGenre
+  prompt       String
+  negativePrompt String?
+  videoStructure String?     // JSON: {hook, body, ending, cta} for reels
+  filePath     String?       // local path once generated, null until then
+  status       ContentStatus @default(PLANNED)
+  aiDisclosureText String    @default("This content features an AI-generated persona.")
+  scheduledFor DateTime?
+  publishedAt  DateTime?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  captions     Caption[]
+
+  @@map("content_assets")
+}
+
+model Caption {
+  id            String   @id @default(cuid())
+  characterId   String
+  character     Character @relation(fields: [characterId], references: [id])
+  contentAssetId String?
+  contentAsset  ContentAsset? @relation(fields: [contentAssetId], references: [id])
+  text          String
+  hashtags      String   // JSON-encoded string array
+  language      String   @default("en")
+  createdAt     DateTime @default(now())
+
+  @@map("captions")
+}
+
+// ─────────────────────────────────────────────
+// 365-day content calendar
+// ─────────────────────────────────────────────
+model CalendarEntry {
+  id           String   @id @default(cuid())
+  characterId  String
+  character    Character @relation(fields: [characterId], references: [id])
+  date         DateTime
+  postTime     String   // HH:mm local time
+  theme        String
+  genre        ContentGenre?
+  cta          String?
+  productTieIn String?
+  fanvuePromo  Boolean  @default(false)
+  ugcPostId    String?
+  isHoliday    Boolean  @default(false)
+  holidayName  String?
+  notes        String?
+  createdAt    DateTime @default(now())
+
+  @@unique([characterId, date])
+  @@map("calendar_entries")
+}
+
+// ─────────────────────────────────────────────
+// Fanvue CRM
+// ─────────────────────────────────────────────
+enum FanvuePostStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHED
+}
+
+model FanvuePost {
+  id          String            @id @default(cuid())
+  title       String
+  description String
+  price       Float?
+  status      FanvuePostStatus  @default(DRAFT)
+  scheduledFor DateTime?
+  publishedAt DateTime?
+  aiDisclosureText String       @default("This profile features an AI-generated persona. All content is synthetic.")
+  createdAt   DateTime          @default(now())
+
+  @@map("fanvue_posts")
+}
+
+enum MessageTemplateCategory {
+  WELCOME
+  PROMO
+  RENEWAL_REMINDER
+  THANK_YOU
+  PPV_OFFER
+}
+
+model FanvueMessage {
+  id        String                   @id @default(cuid())
+  category  MessageTemplateCategory
+  template  String
+  variables String                   // JSON-encoded string array of placeholder names
+  createdAt DateTime                 @default(now())
+
+  @@map("fanvue_messages")
+}
+
+// ─────────────────────────────────────────────
+// UGC deal management
+// ─────────────────────────────────────────────
+enum UGCCategory {
+  SKINCARE
+  SUPPLEMENT
+  SPORTS_EQUIPMENT
+  TENNIS_EQUIPMENT
+  BEAUTY
+  GADGET
+  OTHER
+}
+
+enum UGCStatus {
+  LEAD
+  PITCHED
+  NEGOTIATING
+  CONTRACTED
+  IN_PRODUCTION
+  DELIVERED
+  PAID
+  DECLINED
+}
+
+model UGCDeal {
+  id            String      @id @default(cuid())
+  brandName     String
+  category      UGCCategory
+  status        UGCStatus   @default(LEAD)
+  contactEmail  String?
+  fee           Float?
+  script        String?
+  deliverablePath String?
+  disclosureConfirmed Boolean @default(false) // brand acknowledged AI-generated disclosure requirement
+  dueDate       DateTime?
+  deliveredAt   DateTime?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@map("ugc_deals")
+}
+
+// ─────────────────────────────────────────────
+// Analytics
+// ─────────────────────────────────────────────
+model AnalyticsSnapshot {
+  id                String   @id @default(cuid())
+  periodStart       DateTime
+  periodEnd         DateTime
+  igReach           Int?
+  igSaveRate        Float?
+  igRetentionRate   Float?
+  igFollowerGrowth  Int?
+  fanvueRevenue     Float?
+  fanvueCvr         Float?
+  ugcDealCloseRate  Float?
+  reportSummary     String?
+  recommendations   String? // JSON-encoded string array
+  createdAt         DateTime @default(now())
+
+  @@map("analytics_snapshots")
+}
