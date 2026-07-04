@@ -25,6 +25,7 @@ const GENRE_THEME_LABEL: Record<ContentGenre, string> = {
   BEHIND_THE_SCENES: "Behind the Scenes",
   ROOM_SELFIE: "Dorm Life / Room Selfie",
   LIBRARY_STUDY: "Library / Study Session",
+  MOTIVATION: "Motivation",
 };
 
 function toLocalISODate(d: Date): string {

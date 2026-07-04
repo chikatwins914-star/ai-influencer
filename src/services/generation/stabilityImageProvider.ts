@@ -1,8 +1,8 @@
-import { writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 import { config } from "../../../config/index.js";
 import { logger } from "../../utils/logger.js";
 import type { GenerationRequest, GenerationResult, ImageGenerationProvider } from "./imageProvider.js";
+import { assertOk, persistGeneratedFile } from "./providerUtils.js";
 
 const OUTPUT_ROOT = path.resolve(process.cwd(), "assets/images");
 
@@ -29,16 +29,16 @@ export class StabilityImageProvider implements ImageGenerationProvider {
       body: buildFormData(req),
     });
 
-    if (!response.ok) {
-      const detail = await response.text().catch(() => "");
-      throw new Error(`Stability API error ${response.status}: ${detail}`);
-    }
+    await assertOk(response, "Stability API");
 
     const arrayBuffer = await response.arrayBuffer();
-    const dir = path.join(OUTPUT_ROOT, req.characterId);
-    await mkdir(dir, { recursive: true });
-    const filePath = path.join(dir, `${req.assetId}.png`);
-    await writeFile(filePath, Buffer.from(arrayBuffer));
+    const filePath = await persistGeneratedFile(
+      OUTPUT_ROOT,
+      req.characterId,
+      req.assetId,
+      "png",
+      Buffer.from(arrayBuffer)
+    );
 
     logger.info({ assetId: req.assetId, filePath }, "StabilityImageProvider: image generated");
     return { filePath, provider: this.name };

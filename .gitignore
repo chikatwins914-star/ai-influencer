@@ -1,0 +1,12 @@
+node_modules/
+dist/
+build/
+.next/
+*.log
+.env
+.env.*.local
+*.db
+*.db-journal
+assets/prompts/
+assets/videos/
+assets/images/

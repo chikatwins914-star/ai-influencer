@@ -61,6 +61,7 @@ enum ContentGenre {
   BEHIND_THE_SCENES
   ROOM_SELFIE
   LIBRARY_STUDY
+  MOTIVATION
 }
 
 enum ContentType {

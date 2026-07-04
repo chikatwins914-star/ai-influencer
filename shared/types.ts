@@ -16,7 +16,8 @@ export type ContentGenre =
   | "CASUAL_DATE"
   | "BEHIND_THE_SCENES"
   | "ROOM_SELFIE"
-  | "LIBRARY_STUDY";
+  | "LIBRARY_STUDY"
+  | "MOTIVATION";
 
 export const ALL_CONTENT_GENRES: readonly ContentGenre[] = [
   "GYM",
@@ -31,6 +32,7 @@ export const ALL_CONTENT_GENRES: readonly ContentGenre[] = [
   "BEHIND_THE_SCENES",
   "ROOM_SELFIE",
   "LIBRARY_STUDY",
+  "MOTIVATION",
 ];
 
 export type ContentType = "IMAGE" | "VIDEO_REEL" | "STORY";

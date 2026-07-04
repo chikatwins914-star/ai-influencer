@@ -1,5 +1,5 @@
 /**
- * Seeds character sheets from assets/characters/*/*.json into the database.
+ * Seeds character sheets from assets/characters/<name>/<name>.json into the database.
  * Run with: npx tsx database/seed.ts
  */
 import { readdir } from "node:fs/promises";

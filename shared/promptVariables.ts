@@ -242,6 +242,29 @@ export const GENRE_VARIANTS: Record<ContentGenre, SceneVariant[]> = {
       cameraFraming: "close-up to medium shot",
     },
   ],
+  MOTIVATION: [
+    {
+      location: "empty gym at sunrise, sunlight streaking through the windows",
+      outfit: "matching black sports bra and leggings set",
+      action: "pausing mid-set, determined focused expression looking straight at camera",
+      lighting: "dramatic golden hour side light",
+      cameraFraming: "low-angle medium shot, cinematic",
+    },
+    {
+      location: "outdoor track before dawn, city skyline in the distance",
+      outfit: "fitted running set with a cropped jacket",
+      action: "finishing a run, hands on hips, catching breath, resolute expression",
+      lighting: "cool pre-dawn light transitioning to sunrise",
+      cameraFraming: "wide establishing shot into a slow push-in",
+    },
+    {
+      location: "minimalist bedroom desk with a journal and cup of coffee",
+      outfit: "plain fitted tank top, hair pulled back",
+      action: "writing in a journal, then looking up at camera with quiet intensity",
+      lighting: "soft directional window light, moody contrast",
+      cameraFraming: "close-up on hands, cut to close-up on face",
+    },
+  ],
 };
 
 /** Hashtag pools per genre (English + a couple of broad reach tags) */
@@ -258,6 +281,7 @@ export const GENRE_HASHTAGS: Record<ContentGenre, string[]> = {
   BEHIND_THE_SCENES: ["#btsvlog", "#dayinmylife", "#contentcreator"],
   ROOM_SELFIE: ["#dormlife", "#studentlife", "#selfie"],
   LIBRARY_STUDY: ["#studygram", "#studywithme", "#internationalstudent"],
+  MOTIVATION: ["#motivation", "#mindset", "#disciplineoverfeelings", "#dailymotivation", "#successmindset"],
 };
 
 /**
@@ -266,11 +290,11 @@ export const GENRE_HASHTAGS: Record<ContentGenre, string[]> = {
  * (room selfie / library study) while keeping the original lifestyle mix.
  */
 export const GENRE_DAILY_QUOTA: Record<ContentGenre, number> = {
-  GYM: 2,
+  GYM: 1,
   MORNING_ROUTINE: 2,
   COFFEE: 2,
   TENNIS: 1,
-  BEACH: 2,
+  BEACH: 1,
   MIRROR_SELFIE: 2,
   HEALTHY_FOOD: 2,
   TRAVEL: 1,
@@ -278,4 +302,5 @@ export const GENRE_DAILY_QUOTA: Record<ContentGenre, number> = {
   BEHIND_THE_SCENES: 1,
   ROOM_SELFIE: 2,
   LIBRARY_STUDY: 2,
+  MOTIVATION: 2,
 };

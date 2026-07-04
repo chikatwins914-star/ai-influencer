@@ -1,6 +1,6 @@
-import { writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 import { logger } from "../../utils/logger.js";
+import { persistGeneratedFile } from "./providerUtils.js";
 
 export interface GenerationRequest {
   assetId: string;
@@ -28,19 +28,16 @@ const OUTPUT_ROOT = path.resolve(process.cwd(), "assets/images");
  * file paths, dashboard preview) can be exercised end-to-end before a
  * real image-generation API key is wired in.
  *
- * Swap IMAGE_GEN_PROVIDER to "stability" or "openai" (see
- * StabilityImageProvider) once you have network access + an API key.
+ * Swap IMAGE_GEN_PROVIDER to "stability" or "nano-banana" (see
+ * StabilityImageProvider / NanoBananaImageProvider) once you have network
+ * access + an API key.
  */
 export class LocalStubImageProvider implements ImageGenerationProvider {
   readonly name = "local-stub";
 
   async generate(req: GenerationRequest): Promise<GenerationResult> {
-    const dir = path.join(OUTPUT_ROOT, req.characterId);
-    await mkdir(dir, { recursive: true });
-
-    const filePath = path.join(dir, `${req.assetId}.svg`);
     const svg = renderPlaceholderSvg(req.prompt);
-    await writeFile(filePath, svg, "utf-8");
+    const filePath = await persistGeneratedFile(OUTPUT_ROOT, req.characterId, req.assetId, "svg", svg);
 
     logger.info({ assetId: req.assetId, filePath }, "LocalStubImageProvider: placeholder generated");
     return { filePath, provider: this.name };
