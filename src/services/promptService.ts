@@ -29,7 +29,7 @@ async function getCharacterForPrompt(characterId: string): Promise<CharacterForP
   const raw = await prisma.character.findUnique({ where: { id: characterId } });
   if (!raw) throw new AppError("Character not found", 404);
 
-  const deserialized = deserializeCharacter(raw as unknown as DbCharacterRaw) as DbCharacterRaw & {
+  const deserialized = deserializeCharacter(raw as unknown as DbCharacterRaw) as unknown as DbCharacterRaw & {
     accessories: string[];
   };
 
