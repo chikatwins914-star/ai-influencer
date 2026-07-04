@@ -53,6 +53,12 @@ export const CAPTION_TEMPLATES: Record<ContentGenre, string[]> = {
     "library grind before the gym grind 📖💪 {extra}",
     "paying my own tuition so this library seat is basically my office now 😅 {extra}",
   ],
+  MOTIVATION: [
+    "nobody is coming to save you — get up 🔥 {extra}",
+    "discipline > motivation, every single time {extra}",
+    "read this if you feel like quitting today {extra}",
+    "your excuses expire today ⏳ {extra}",
+  ],
 };
 
 export function fillTemplate(template: string, variables: Record<string, string>): string {

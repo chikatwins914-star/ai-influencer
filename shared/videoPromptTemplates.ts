@@ -102,6 +102,26 @@ export const VIDEO_TEMPLATES: Record<ContentGenre, VideoStructure[]> = {
       cta: "Comment your best study tips — I need them 😅",
     },
   ],
+  MOTIVATION: [
+    {
+      hook: "Bold white-on-black text overlay hits on beat: 'NOBODY IS COMING TO SAVE YOU.' — cut to sunrise gym, slow-motion",
+      body: "Cinematic training montage: heavy breathing close-up, weight slamming down, sprint on an empty track, journal page with a goal underlined — deep, calm voiceover-style captions building line by line: 'Discipline is a decision you make before you feel like it. / Get up. / Show up. / Do it again tomorrow.'",
+      ending: "Slow push-in on her face, steady eye contact with the camera, no smile — just quiet resolve, final text overlay: 'YOUR EXCUSES EXPIRE TODAY.'",
+      cta: "Save this for the morning you don't want to get up. Follow for daily motivation.",
+    },
+    {
+      hook: "Text overlay punches in: 'IF YOU'RE TIRED OF STARTING OVER, STOP QUITTING.' — cut to pre-dawn run, breath visible in cold air",
+      body: "Fast, rhythmic cuts timed to a swelling instrumental: lacing up shoes in the dark, first hard step outside, mid-run struggle face, gritted-teeth push up a hill — captions land one at a time: 'Motivation is temporary. / Discipline outlasts it. / The version of you that gives up here never becomes the version who wins.'",
+      ending: "Reaching the top of the hill as the sun breaks the horizon, hands raised, controlled exhale, not a big celebration — earned, quiet",
+      cta: "Tag someone who needs to see this today. Save it for your hardest day.",
+    },
+    {
+      hook: "Direct-to-camera cold open, no music yet: 'Nobody talks about the version of you that has to show up when it's hard.' — text overlay: 'WATCH THIS IF YOU WANT TO QUIT'",
+      body: "Cuts between direct-to-camera speech fragments and B-roll of solo training (deadlift setup, journaling by lamp light, alarm clock at 5am) — voiceover-style captions: 'You don't need more motivation. / You need a shorter list of excuses. / Do the work today that your future self is depending on.' — music builds under the last two lines",
+      ending: "Final direct-to-camera line, steady and calm: 'So get up. Let's go.' — hard cut to black",
+      cta: "Comment 'I'M IN' if you're starting today. Follow for more.",
+    },
+  ],
 };
 
 export function getVideoTemplate(genre: ContentGenre, index = 0): VideoStructure {
