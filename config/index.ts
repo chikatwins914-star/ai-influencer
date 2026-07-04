@@ -19,8 +19,8 @@ const EnvSchema = z.object({
 
   IMAGE_GEN_API_KEY: z.string().optional(),
   VIDEO_GEN_API_KEY: z.string().optional(),
-  IMAGE_GEN_PROVIDER: z.enum(["local-stub", "stability", "openai"]).default("local-stub"),
-  VIDEO_GEN_PROVIDER: z.enum(["local-stub", "runway"]).default("local-stub"),
+  IMAGE_GEN_PROVIDER: z.enum(["local-stub", "stability", "openai", "nano-banana"]).default("local-stub"),
+  VIDEO_GEN_PROVIDER: z.enum(["local-stub", "runway", "seedance"]).default("local-stub"),
 
   FANVUE_ACCOUNT_EMAIL: z.string().optional(),
   FANVUE_PROFILE_URL: z.string().optional(),
