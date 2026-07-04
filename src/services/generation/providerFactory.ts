@@ -12,8 +12,6 @@ export function getImageProvider(): ImageGenerationProvider {
       return new StabilityImageProvider();
     case "nano-banana":
       return new NanoBananaImageProvider();
-    case "openai":
-      throw new Error("IMAGE_GEN_PROVIDER=openai has no provider implementation yet");
     case "local-stub":
       return new LocalStubImageProvider();
   }
@@ -24,8 +22,6 @@ export function getVideoProvider(): VideoGenerationProvider {
   switch (config.generation.videoProvider) {
     case "seedance":
       return new SeedanceVideoProvider();
-    case "runway":
-      throw new Error("VIDEO_GEN_PROVIDER=runway has no provider implementation yet");
     case "local-stub":
       return new LocalStubVideoProvider();
   }

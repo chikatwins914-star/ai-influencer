@@ -38,8 +38,13 @@ contentRouter.post(
   })
 );
 
+// Caps how much work one HTTP request can trigger — each video asset alone
+// can take several minutes against a real provider, so an unbounded batch
+// risks tying up the request far longer than any reverse proxy will wait.
+const MAX_ASSET_IDS_PER_REQUEST = 20;
+
 const GenerateAssetsSchema = z.object({
-  assetIds: z.array(z.string().min(1)).min(1),
+  assetIds: z.array(z.string().min(1)).min(1).max(MAX_ASSET_IDS_PER_REQUEST),
 });
 
 /**
@@ -55,6 +60,10 @@ contentRouter.post(
   asyncHandler(async (req, res) => {
     const { assetIds } = GenerateAssetsSchema.parse(req.body);
     const outcomes = await generateAssetFiles(assetIds);
-    res.status(201).json({ outcomes });
+
+    const failedCount = outcomes.filter((o) => o.status === "FAILED").length;
+    const statusCode = failedCount === 0 ? 201 : failedCount === outcomes.length ? 502 : 207;
+
+    res.status(statusCode).json({ outcomes });
   })
 );

@@ -1,7 +1,7 @@
-import { writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 import { logger } from "../../utils/logger.js";
 import type { GenerationRequest, GenerationResult } from "./imageProvider.js";
+import { persistGeneratedFile } from "./providerUtils.js";
 
 export interface VideoGenerationRequest extends GenerationRequest {
   videoStructure?: { hook: string; body: string; ending: string; cta: string } | undefined;
@@ -25,10 +25,6 @@ export class LocalStubVideoProvider implements VideoGenerationProvider {
   readonly name = "local-stub";
 
   async generate(req: VideoGenerationRequest): Promise<GenerationResult> {
-    const dir = path.join(OUTPUT_ROOT, req.characterId);
-    await mkdir(dir, { recursive: true });
-
-    const filePath = path.join(dir, `${req.assetId}.json`);
     const ticket = {
       status: "PENDING_MANUAL_OR_PROVIDER_GENERATION",
       assetId: req.assetId,
@@ -38,7 +34,13 @@ export class LocalStubVideoProvider implements VideoGenerationProvider {
       aspectRatio: "9:16",
       note: "Pass `prompt` to your video generation tool of choice (Runway, Pika, etc.) or produce manually using the hook/body/ending/cta structure.",
     };
-    await writeFile(filePath, JSON.stringify(ticket, null, 2), "utf-8");
+    const filePath = await persistGeneratedFile(
+      OUTPUT_ROOT,
+      req.characterId,
+      req.assetId,
+      "json",
+      JSON.stringify(ticket, null, 2)
+    );
 
     logger.info({ assetId: req.assetId, filePath }, "LocalStubVideoProvider: job ticket written");
     return { filePath, provider: this.name };

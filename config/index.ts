@@ -19,8 +19,11 @@ const EnvSchema = z.object({
 
   IMAGE_GEN_API_KEY: z.string().optional(),
   VIDEO_GEN_API_KEY: z.string().optional(),
-  IMAGE_GEN_PROVIDER: z.enum(["local-stub", "stability", "openai", "nano-banana"]).default("local-stub"),
-  VIDEO_GEN_PROVIDER: z.enum(["local-stub", "runway", "seedance"]).default("local-stub"),
+  // Only providers with an actual implementation in src/services/generation/
+  // belong in these enums — an accepted-but-unimplemented value would pass
+  // startup validation silently and only fail later, at first use.
+  IMAGE_GEN_PROVIDER: z.enum(["local-stub", "stability", "nano-banana"]).default("local-stub"),
+  VIDEO_GEN_PROVIDER: z.enum(["local-stub", "seedance"]).default("local-stub"),
 
   FANVUE_ACCOUNT_EMAIL: z.string().optional(),
   FANVUE_PROFILE_URL: z.string().optional(),

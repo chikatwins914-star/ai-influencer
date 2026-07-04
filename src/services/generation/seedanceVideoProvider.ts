@@ -1,9 +1,9 @@
-import { writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 import { config } from "../../../config/index.js";
 import { logger } from "../../utils/logger.js";
 import type { GenerationResult } from "./imageProvider.js";
 import type { VideoGenerationProvider, VideoGenerationRequest } from "./videoProvider.js";
+import { assertOk, persistGeneratedFile, sleep } from "./providerUtils.js";
 
 const OUTPUT_ROOT = path.resolve(process.cwd(), "assets/videos");
 const ARK_BASE_URL = "https://ark.cn-beijing.volces.com/api/v3";
@@ -33,7 +33,7 @@ export class SeedanceVideoProvider implements VideoGenerationProvider {
 
     const taskId = await this.submitTask(req);
     const videoUrl = await this.pollUntilComplete(taskId);
-    const filePath = await this.download(videoUrl, req);
+    const filePath = await this.download(videoUrl, req.characterId, req.assetId);
 
     logger.info({ assetId: req.assetId, filePath, taskId }, "SeedanceVideoProvider: video generated");
     return { filePath, provider: this.name };
@@ -52,10 +52,7 @@ export class SeedanceVideoProvider implements VideoGenerationProvider {
       }),
     });
 
-    if (!response.ok) {
-      const detail = await response.text().catch(() => "");
-      throw new Error(`Seedance (Ark) API error ${response.status}: ${detail}`);
-    }
+    await assertOk(response, "Seedance (Ark) API");
 
     const json = (await response.json()) as { id?: string };
     if (!json.id) throw new Error("Seedance (Ark) task creation response did not include a task id");
@@ -68,10 +65,7 @@ export class SeedanceVideoProvider implements VideoGenerationProvider {
         headers: { Authorization: `Bearer ${config.generation.videoGenApiKey}` },
       });
 
-      if (!response.ok) {
-        const detail = await response.text().catch(() => "");
-        throw new Error(`Seedance (Ark) API error ${response.status}: ${detail}`);
-      }
+      await assertOk(response, "Seedance (Ark) API");
 
       const json = (await response.json()) as ArkTaskStatusResponse;
       if (json.status === "succeeded") {
@@ -83,20 +77,17 @@ export class SeedanceVideoProvider implements VideoGenerationProvider {
         throw new Error(`Seedance (Ark) task failed: ${json.error?.message ?? "unknown error"}`);
       }
 
-      await sleep(POLL_INTERVAL_MS);
+      const isLastAttempt = attempt === MAX_POLL_ATTEMPTS - 1;
+      if (!isLastAttempt) await sleep(POLL_INTERVAL_MS);
     }
     throw new Error(`Seedance (Ark) task ${taskId} did not complete within the polling window`);
   }
 
-  private async download(videoUrl: string, req: VideoGenerationRequest): Promise<string> {
+  private async download(videoUrl: string, characterId: string, assetId: string): Promise<string> {
     const response = await fetch(videoUrl);
-    if (!response.ok) throw new Error(`Failed to download generated video: ${response.status}`);
+    await assertOk(response, "Seedance (Ark) video download");
 
-    const dir = path.join(OUTPUT_ROOT, req.characterId);
-    await mkdir(dir, { recursive: true });
-    const filePath = path.join(dir, `${req.assetId}.mp4`);
-    await writeFile(filePath, Buffer.from(await response.arrayBuffer()));
-    return filePath;
+    return persistGeneratedFile(OUTPUT_ROOT, characterId, assetId, "mp4", Buffer.from(await response.arrayBuffer()));
   }
 }
 
@@ -104,10 +95,6 @@ function buildPromptText(req: VideoGenerationRequest): string {
   if (!req.videoStructure) return req.prompt;
   const { hook, body, ending, cta } = req.videoStructure;
   return [req.prompt, `Hook: ${hook}`, `Body: ${body}`, `Ending: ${ending}`, `CTA: ${cta}`].join("\n\n");
-}
-
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 interface ArkTaskStatusResponse {

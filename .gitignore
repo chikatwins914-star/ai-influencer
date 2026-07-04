@@ -9,3 +9,4 @@ build/
 *.db-journal
 assets/prompts/
 assets/videos/
+assets/images/

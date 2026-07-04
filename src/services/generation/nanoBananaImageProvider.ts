@@ -1,8 +1,8 @@
-import { writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 import { config } from "../../../config/index.js";
 import { logger } from "../../utils/logger.js";
 import type { GenerationRequest, GenerationResult, ImageGenerationProvider } from "./imageProvider.js";
+import { assertOk, persistGeneratedFile } from "./providerUtils.js";
 
 const OUTPUT_ROOT = path.resolve(process.cwd(), "assets/images");
 const MODEL_ID = "gemini-3.1-flash-image-preview"; // Nano Banana 2
@@ -40,10 +40,7 @@ export class NanoBananaImageProvider implements ImageGenerationProvider {
       }
     );
 
-    if (!response.ok) {
-      const detail = await response.text().catch(() => "");
-      throw new Error(`Gemini API error ${response.status}: ${detail}`);
-    }
+    await assertOk(response, "Gemini API");
 
     const json = (await response.json()) as GeminiGenerateContentResponse;
     const inlineData = json.candidates?.[0]?.content?.parts?.find((p) => p.inlineData)?.inlineData;
@@ -51,18 +48,36 @@ export class NanoBananaImageProvider implements ImageGenerationProvider {
       throw new Error("Gemini API response did not include image data");
     }
 
-    const dir = path.join(OUTPUT_ROOT, req.characterId);
-    await mkdir(dir, { recursive: true });
-    const filePath = path.join(dir, `${req.assetId}.png`);
-    await writeFile(filePath, Buffer.from(inlineData.data, "base64"));
+    const ext = extensionForMimeType(inlineData.mimeType);
+    const filePath = await persistGeneratedFile(
+      OUTPUT_ROOT,
+      req.characterId,
+      req.assetId,
+      ext,
+      Buffer.from(inlineData.data, "base64")
+    );
 
-    logger.info({ assetId: req.assetId, filePath }, "NanoBananaImageProvider: image generated");
+    logger.info({ assetId: req.assetId, filePath, mimeType: inlineData.mimeType }, "NanoBananaImageProvider: image generated");
     return { filePath, provider: this.name };
   }
 }
 
 function buildPromptText(req: GenerationRequest): string {
   return req.negativePrompt ? `${req.prompt}\n\nAvoid: ${req.negativePrompt}` : req.prompt;
+}
+
+/** Gemini image responses aren't format-constrained in the request, so the
+ * actual returned mimeType decides the file extension rather than assuming PNG. */
+function extensionForMimeType(mimeType: string | undefined): string {
+  switch (mimeType) {
+    case "image/jpeg":
+      return "jpg";
+    case "image/webp":
+      return "webp";
+    case "image/png":
+    default:
+      return "png";
+  }
 }
 
 interface GeminiGenerateContentResponse {
