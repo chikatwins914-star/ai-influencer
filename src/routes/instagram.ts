@@ -30,7 +30,7 @@ instagramRouter.post(
 
     const result = await publishToInstagram({
       mediaUrl,
-      caption: caption?.text,
+      ...(caption?.text ? { caption: caption.text } : {}),
       mediaType,
     });
 
