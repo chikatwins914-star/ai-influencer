@@ -11,9 +11,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: npm install
-      - run: npx prisma generate
+      - run: npm ci
       - run: npx prisma migrate deploy
-      - run: npx tsx database/seed.ts
+      - run: npm run seed
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
