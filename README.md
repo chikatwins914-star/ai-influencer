@@ -1,23 +1,21 @@
 # ai-influencer
 
-AIインフルエンサー運営システム(構築中 — Phase2以降で機能追加予定)
+AIインフルエンサー運営システム
 
-> ⚠️ 完全なセットアップガイド・トラブルシューティングはPhase10(ドキュメント整備)で追加します。
-> このREADMEは現時点(Phase1完了時点)の最小限の起動手順のみを記載しています。
+## 現在の状態
 
-## 現在の状態(Phase1完了)
+- TypeScript / Prisma(PostgreSQL) / Express の基盤、設定管理・ロギング・エラーハンドリング
+- キャラクター管理(`src/services/characterService.ts` + `/api/characters`)
+- 画像/リール/ストーリーのプロンプト・キャプション自動生成(`/api/content/generate-today`)、
+  13ジャンル対応(GYM, MORNING_ROUTINE, COFFEE, TENNIS, BEACH, MIRROR_SELFIE, HEALTHY_FOOD,
+  TRAVEL, CASUAL_DATE, BEHIND_THE_SCENES, ROOM_SELFIE, LIBRARY_STUDY, MOTIVATION)
+- 画像・動画の実生成(`/api/content/generate-assets`) — 下記「画像・動画生成」参照
+- 365日コンテンツカレンダー(`/api/calendar`)
+- Instagram Graph API連携・Fanvue文案生成・週次分析レポート
+- ダッシュボード(Next.js, `dashboard/`)
+- テスト基盤 (Vitest, 41テスト)
 
-- ディレクトリ構成
-- TypeScript / Prisma / Express の基盤
-- 設定管理 (`config/index.ts`, `.env`)
-- ロギング (`src/utils/logger.ts`)
-- エラーハンドリング (`src/middleware/errorHandler.ts`)
-- AI開示テンプレート共通モジュール (`shared/aiDisclosure.ts`)
-- テスト基盤 (Vitest)
-
-未実装: キャラクター管理・プロンプト生成・コンテンツ生成・自動化・ダッシュボード(Phase2以降)
-
-## セットアップ(現時点で可能な範囲)
+## セットアップ
 
 ```bash
 cp .env.example .env
@@ -43,6 +41,24 @@ npm run dev
 誘導文言(`GET /api/fanvue/funnel-copy`)に実際のリンクが反映されます。未設定の場合はプレースホルダー
 (`https://www.fanvue.com/[set-your-handle]`)のまま出力されるので、後から設定しても既存の生成物には
 影響しません(呼び出し時点の値が使われます)。
+
+## 画像・動画生成について
+
+`POST /api/content/generate-today` はプロンプト・キャプションのみを生成します(実際の画像/動画ファイルは
+作りません)。実ファイルを生成するには `POST /api/content/generate-assets`(`assetIds` 配列を渡す、
+最大20件/リクエスト)を呼び出します。どのプロバイダを使うかは `.env` で切り替えます:
+
+| 用途 | `.env` | 説明 |
+|---|---|---|
+| 画像(デフォルト) | `IMAGE_GEN_PROVIDER=local-stub` | 課金なし。プレースホルダーSVGを書き出すだけ |
+| 画像 | `IMAGE_GEN_PROVIDER=stability` + `IMAGE_GEN_API_KEY` | Stability AI |
+| 画像 | `IMAGE_GEN_PROVIDER=nano-banana` + `IMAGE_GEN_API_KEY`(Gemini APIキー) | Google Nano Banana 2 |
+| 動画(デフォルト) | `VIDEO_GEN_PROVIDER=local-stub` | 課金なし。作業チケットのJSONを書き出すだけ |
+| 動画 | `VIDEO_GEN_PROVIDER=seedance` + `VIDEO_GEN_API_KEY`(Volcengine Arkキー) | ByteDance Seedance 2.0(非同期タスク、生成に数分かかる場合あり) |
+
+生成したファイルは `assets/images/` `assets/videos/` 配下に保存されます(いずれも生成物なので
+`.gitignore` 済み)。`POST /api/content/generate-assets` はバッチ内の一部が失敗しても残りの結果を
+返します(全成功=201、一部失敗=207、全失敗=502)。
 
 ## Instagram APIへの接続について
 
