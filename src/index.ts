@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import { config } from "../config/index.js";
 import { logger } from "./utils/logger.js";
 import { errorHandler } from "./middleware/errorHandler.js";
@@ -11,7 +12,10 @@ import { fanvueRouter } from "./routes/fanvue.js";
 import { analyticsRouter } from "./routes/analytics.js";
 
 const app = express();
-
+app.use(cors({
+  origin: ["https://ai-influencer-c1g7.vercel.app", "http://localhost:3000"],
+  credentials: true,
+}));
 app.use(express.json());
 
 app.get("/health", (_req, res) => {
