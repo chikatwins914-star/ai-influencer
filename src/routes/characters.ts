@@ -20,7 +20,12 @@ characterRouter.get(
 characterRouter.get(
   "/:id",
   asyncHandler(async (req, res) => {
-    const character = await prisma.character.findUnique({ where: { id: req.params["id"] } });
+   characterRouter.get(
+  "/:id",
+  asyncHandler(async (req, res) => {
+    const id = req.params["id"];
+    if (!id) throw new AppError("Missing character id", 400);
+    const character = await prisma.character.findUnique({ where: { id } });
     if (!character) throw new AppError("Character not found", 404);
     res.json(deserializeCharacter(character));
   })
