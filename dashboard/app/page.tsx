@@ -152,7 +152,12 @@ export default function DashboardPage() {
 
         <section className="bg-white rounded-lg shadow p-6">
           <h2 className="text-xl font-bold mb-4">生成状況</h2>
-          <StatusPipeline />
+          <div className="space-y-3">
+            {assets.slice(0, 5).map((asset) => (
+              <StatusPipeline key={asset.id} status={asset.status} />
+            ))}
+            {assets.length === 0 && <p className="text-gray-500 text-sm">まだコンテンツがありません</p>}
+          </div>
         </section>
 
         <section className="bg-white rounded-lg shadow p-6">
