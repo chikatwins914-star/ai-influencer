@@ -90,7 +90,7 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <PageHeader title={`${character.name} - AI Influencer Dashboard`} subtitle="AI disclosure policy compliant" />
+      <PageHeader title={`${character.name} - AI Influencer Dashboard`} description="AI disclosure policy compliant" />
 
       <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
         <AIDisclosureHeader />
