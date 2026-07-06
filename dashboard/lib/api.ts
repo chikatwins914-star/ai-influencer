@@ -195,6 +195,27 @@ export const api = {
         "/api/content/generate-assets",
         { method: "POST", body: JSON.stringify({ assetIds }) }
       ),
+    /** Registers a manually-produced file (e.g. a video edited outside this
+     * system) as a ContentAsset — bypasses AI generation, uses FormData
+     * (not the shared `request` helper, which always sends JSON). */
+    uploadAsset: async (params: {
+      characterId: string;
+      type: ContentAsset["type"];
+      genre: string;
+      prompt?: string;
+      file: File;
+    }): Promise<ContentAsset> => {
+      const form = new FormData();
+      form.append("characterId", params.characterId);
+      form.append("type", params.type);
+      form.append("genre", params.genre);
+      if (params.prompt) form.append("prompt", params.prompt);
+      form.append("file", params.file);
+
+      const res = await fetch(`${API_BASE}/api/content/upload-asset`, { method: "POST", body: form });
+      if (!res.ok) throw new ApiError(await res.text(), res.status);
+      return (await res.json()) as ContentAsset;
+    },
   },
   instagram: {
     dailyOps: (characterId: string) =>
