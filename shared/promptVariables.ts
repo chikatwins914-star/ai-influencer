@@ -186,6 +186,20 @@ export const GENRE_VARIANTS: Record<ContentGenre, SceneVariant[]> = {
       lighting: "warm evening ambient light",
       cameraFraming: "medium close-up",
     },
+    {
+      location: "simple bedroom with a plain wall backdrop",
+      outfit: "fitted black mini dress with a draped cowl neckline",
+      action: "trying on the outfit, one hand running through hair, turning slightly to show the fit",
+      lighting: "soft natural daylight from a window",
+      cameraFraming: "medium shot, full outfit visible",
+    },
+    {
+      location: "simple bedroom with a plain wall backdrop",
+      outfit: "fitted beige mini dress with a draped neckline",
+      action: "hands on hips, confident pose showing off the outfit",
+      lighting: "soft natural daylight from a window",
+      cameraFraming: "medium shot, full outfit visible",
+    },
   ],
   BEHIND_THE_SCENES: [
     {
@@ -277,7 +291,7 @@ export const GENRE_HASHTAGS: Record<ContentGenre, string[]> = {
   MIRROR_SELFIE: ["#ootd", "#mirrorselfie", "#fitcheck"],
   HEALTHY_FOOD: ["#healthyfood", "#acaibowl", "#foodie"],
   TRAVEL: ["#studyabroad", "#traveldiaries", "#canadalife"],
-  CASUAL_DATE: ["#datenight", "#ootn"],
+  CASUAL_DATE: ["#datenight", "#ootn", "#ootd", "#outfitcheck"],
   BEHIND_THE_SCENES: ["#btsvlog", "#dayinmylife", "#contentcreator"],
   ROOM_SELFIE: ["#dormlife", "#studentlife", "#selfie"],
   LIBRARY_STUDY: ["#studygram", "#studywithme", "#internationalstudent"],
