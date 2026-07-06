@@ -17,11 +17,6 @@ import { ugcRouter } from "./routes/ugc.js";
 // Vercel mints a new one per branch/commit), and local dev.
 const ALLOWED_ORIGIN_PATTERNS = [/^https:\/\/ai-influencer-c1g7(-[\w-]+)?\.vercel\.app$/, /^http:\/\/localhost:3000$/];
 
-// Allows the production dashboard domain, any Vercel preview deployment for
-// the same project (ai-influencer-c1g7-<branch/hash>-<team>.vercel.app —
-// Vercel mints a new one per branch/commit), and local dev.
-const ALLOWED_ORIGIN_PATTERNS = [/^https:\/\/ai-influencer-c1g7(-[\w-]+)?\.vercel\.app$/, /^http:\/\/localhost:3000$/];
-
 const app = express();
 app.use(
   cors({
