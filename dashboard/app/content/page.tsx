@@ -11,6 +11,22 @@ const TYPE_LABEL: Record<ContentAsset["type"], string> = {
   STORY: "ストーリー",
 };
 
+const GENRES = [
+  "GYM",
+  "MORNING_ROUTINE",
+  "COFFEE",
+  "TENNIS",
+  "BEACH",
+  "MIRROR_SELFIE",
+  "HEALTHY_FOOD",
+  "TRAVEL",
+  "CASUAL_DATE",
+  "BEHIND_THE_SCENES",
+  "ROOM_SELFIE",
+  "LIBRARY_STUDY",
+  "MOTIVATION",
+] as const;
+
 export default function ContentPage() {
   const [character, setCharacter] = useState<Character | null>(null);
   const [assets, setAssets] = useState<ContentAsset[]>([]);
@@ -19,6 +35,10 @@ export default function ContentPage() {
   const [error, setError] = useState<string | null>(null);
   const [busyAssetId, setBusyAssetId] = useState<string | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [uploadType, setUploadType] = useState<ContentAsset["type"]>("VIDEO_REEL");
+  const [uploadGenre, setUploadGenre] = useState<(typeof GENRES)[number]>("GYM");
+  const [uploadCaption, setUploadCaption] = useState("");
+  const [uploading, setUploading] = useState(false);
 
   async function load() {
     setLoading(true);
@@ -56,6 +76,30 @@ export default function ContentPage() {
     }
   }
 
+  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // allow re-selecting the same file next time
+    if (!file || !character) return;
+
+    setUploading(true);
+    setError(null);
+    try {
+      await api.content.uploadAsset({
+        characterId: character.id,
+        type: uploadType,
+        genre: uploadGenre,
+        prompt: uploadCaption || undefined,
+        file,
+      });
+      setUploadCaption("");
+      await load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "アップロードに失敗しました");
+    } finally {
+      setUploading(false);
+    }
+  }
+
   async function handleDownload(asset: ContentAsset) {
     if (!asset.mediaUrl) return;
     setDownloadingId(asset.id);
@@ -86,6 +130,51 @@ export default function ContentPage() {
         <div className="empty-state">キャラクターが登録されていません。</div>
       ) : (
         <>
+          <div className="card" style={{ marginBottom: 20 }}>
+            <h3 style={{ marginTop: 0, marginBottom: 12, fontSize: 14 }}>自分で作った動画/画像をアップロード</h3>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+              <select
+                value={uploadType}
+                onChange={(e) => setUploadType(e.target.value as ContentAsset["type"])}
+                className="btn btn-secondary"
+              >
+                {(["VIDEO_REEL", "IMAGE", "STORY"] as const).map((t) => (
+                  <option key={t} value={t}>
+                    {TYPE_LABEL[t]}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={uploadGenre}
+                onChange={(e) => setUploadGenre(e.target.value as (typeof GENRES)[number])}
+                className="btn btn-secondary"
+              >
+                {GENRES.map((g) => (
+                  <option key={g} value={g}>
+                    {g}
+                  </option>
+                ))}
+              </select>
+              <input
+                type="text"
+                placeholder="キャプション(任意)"
+                value={uploadCaption}
+                onChange={(e) => setUploadCaption(e.target.value)}
+                style={{ flex: 1, minWidth: 160, padding: "8px 10px", borderRadius: 8 }}
+              />
+              <label className="btn btn-primary" style={{ cursor: uploading ? "not-allowed" : "pointer" }}>
+                {uploading ? "アップロード中..." : "ファイルを選択"}
+                <input
+                  type="file"
+                  accept="video/mp4,video/quicktime,video/webm,image/png,image/jpeg,image/webp"
+                  onChange={handleUpload}
+                  disabled={uploading}
+                  style={{ display: "none" }}
+                />
+              </label>
+            </div>
+          </div>
+
           <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
             {(["ALL", "IMAGE", "VIDEO_REEL", "STORY"] as const).map((t) => (
               <button

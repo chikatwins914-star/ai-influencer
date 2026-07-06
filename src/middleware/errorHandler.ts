@@ -1,5 +1,6 @@
 import type { NextFunction, Request, RequestHandler, Response } from "express";
 import { ZodError } from "zod";
+import { MulterError } from "multer";
 import { logger } from "../utils/logger.js";
 
 export class AppError extends Error {
@@ -34,6 +35,12 @@ export function errorHandler(err: unknown, req: Request, res: Response, _next: N
   if (err instanceof ZodError) {
     logger.warn({ err: err.flatten() }, "Validation error");
     res.status(400).json({ error: "ValidationError", details: err.flatten() });
+    return;
+  }
+
+  if (err instanceof MulterError) {
+    logger.warn({ err: err.message, code: err.code }, "File upload error");
+    res.status(400).json({ error: err.message });
     return;
   }
 
