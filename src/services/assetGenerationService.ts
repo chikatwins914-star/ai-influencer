@@ -1,3 +1,4 @@
+import path from "node:path";
 import { prisma } from "../utils/prisma.js";
 import { logger } from "../utils/logger.js";
 import { getImageProvider, getVideoProvider } from "./generation/providerFactory.js";
@@ -30,10 +31,36 @@ const DB_PERSIST_RETRY_ATTEMPTS = 3;
  */
 export async function generateAssetFile(assetId: string): Promise<AssetGenerationOutcome> {
   const asset = await prisma.contentAsset.findUnique({ where: { id: assetId } });
-  return generateFromAsset(assetId, asset);
+  const referenceImagePaths = asset ? await getReferenceImagePaths(asset.characterId) : [];
+  return generateFromAsset(assetId, asset, referenceImagePaths);
 }
 
-async function generateFromAsset(assetId: string, asset: ContentAssetRow | null): Promise<AssetGenerationOutcome> {
+/** Reads a character's stored reference photo paths (JSON-encoded, relative
+ * to the repo root) and resolves them to absolute paths on disk. */
+async function getReferenceImagePaths(characterId: string): Promise<string[]> {
+  const character = await prisma.character.findUnique({
+    where: { id: characterId },
+    select: { referenceImages: true },
+  });
+  return resolveReferenceImagePaths(character?.referenceImages);
+}
+
+function resolveReferenceImagePaths(referenceImagesJson: string | null | undefined): string[] {
+  if (!referenceImagesJson) return [];
+  try {
+    const parsed: unknown = JSON.parse(referenceImagesJson);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((p): p is string => typeof p === "string").map((p) => path.resolve(process.cwd(), p));
+  } catch {
+    return [];
+  }
+}
+
+async function generateFromAsset(
+  assetId: string,
+  asset: ContentAssetRow | null,
+  referenceImagePaths: string[] = []
+): Promise<AssetGenerationOutcome> {
   if (!asset) {
     return { assetId, status: "FAILED", error: "Content asset not found" };
   }
@@ -56,6 +83,7 @@ async function generateFromAsset(assetId: string, asset: ContentAssetRow | null)
             characterId: asset.characterId,
             prompt: asset.prompt,
             negativePrompt: asset.negativePrompt,
+            referenceImagePaths,
           });
 
     // Generation already succeeded (and, with a real provider, already cost
@@ -109,6 +137,15 @@ export async function generateAssetFiles(assetIds: string[]): Promise<AssetGener
   const assets = await prisma.contentAsset.findMany({ where: { id: { in: uniqueIds } } });
   const assetById = new Map(assets.map((a) => [a.id, a]));
 
+  const characterIds = [...new Set(assets.map((a) => a.characterId))];
+  const characters = await prisma.character.findMany({
+    where: { id: { in: characterIds } },
+    select: { id: true, referenceImages: true },
+  });
+  const referenceImagePathsByCharacterId = new Map(
+    characters.map((c) => [c.id, resolveReferenceImagePaths(c.referenceImages)])
+  );
+
   const outcomes: AssetGenerationOutcome[] = new Array(uniqueIds.length);
   let cursor = 0;
 
@@ -117,7 +154,9 @@ export async function generateAssetFiles(assetIds: string[]): Promise<AssetGener
       const index = cursor++;
       if (index >= uniqueIds.length) return;
       const assetId = uniqueIds[index]!;
-      outcomes[index] = await generateFromAsset(assetId, assetById.get(assetId) ?? null);
+      const asset = assetById.get(assetId) ?? null;
+      const referenceImagePaths = asset ? referenceImagePathsByCharacterId.get(asset.characterId) ?? [] : [];
+      outcomes[index] = await generateFromAsset(assetId, asset, referenceImagePaths);
     }
   }
 

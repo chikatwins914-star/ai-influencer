@@ -67,5 +67,6 @@ export function toDbCharacterInput(sheet: CharacterSheet) {
     skinDescription: sheet.skinDescription,
     accessories: JSON.stringify(sheet.accessories),
     worldview: sheet.worldview,
+    referenceImages: JSON.stringify(sheet.referenceImages ?? []),
   };
 }

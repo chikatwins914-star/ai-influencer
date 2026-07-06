@@ -65,15 +65,14 @@ characterRouter.patch(
     const partial = PatchSchema.parse(req.body);
     const data: Record<string, unknown> = { ...partial };
 
-    for (const field of ["hobbies", "favoriteFoods", "dislikedFoods", "accessories"] as const) {
+    for (const field of ["hobbies", "favoriteFoods", "dislikedFoods", "accessories", "referenceImages"] as const) {
       if (partial[field] !== undefined) {
         data[field] = JSON.stringify(partial[field]);
       }
     }
-    // nationality is sheet-level metadata not persisted on the DB model; ignore if present
+    // nationality/visualReferenceDoc are sheet-level metadata not persisted on the DB model; ignore if present
     delete data["nationality"];
     delete data["visualReferenceDoc"];
-    delete data["referenceImages"];
 
     const updated = await prisma.character.update({ where: { id }, data });
     res.json(deserializeCharacter(updated));

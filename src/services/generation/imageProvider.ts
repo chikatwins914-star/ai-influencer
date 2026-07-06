@@ -6,6 +6,11 @@ export interface GenerationRequest {
   characterId: string;
   prompt: string;
   negativePrompt?: string | null;
+  /** Absolute paths to the character's reference photos, if any — providers
+   * that support image input (e.g. NanoBananaImageProvider) use these to
+   * keep the generated face/identity consistent instead of relying on the
+   * text description alone. */
+  referenceImagePaths?: string[];
 }
 
 export interface GenerationResult {
