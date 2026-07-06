@@ -69,6 +69,9 @@ export interface DailyImagePromptResult {
   genre: ContentGenre;
   prompt: string;
   negativePrompt: string;
+  /** Shared by every angle variant generated for the same scene, so the
+   * dashboard can group them and generate all angles in one action. */
+  sceneGroupId: string;
 }
 
 /**
@@ -89,9 +92,10 @@ export function generateDailyImagePrompts(
     const count = quota[genre] ?? 0;
     for (let slot = 0; slot < count; slot++) {
       const seedKey = `${character.name}-${dateISO}-${genre}-${slot}`;
+      const sceneGroupId = seedKey;
       for (const angle of ANGLE_VARIANTS) {
         const { prompt, negativePrompt } = buildImagePrompt(character, genre, seedKey, angle);
-        results.push({ genre, prompt, negativePrompt });
+        results.push({ genre, prompt, negativePrompt, sceneGroupId });
       }
     }
   }
@@ -189,7 +193,7 @@ export async function persistDailyContentPlan(characterId: string, dateISO: stri
     stories: Array<{ genre: string; prompt: string }>;
   } = { images: [], videos: [], stories: [] };
 
-  for (const [i, img] of images.entries()) {
+  for (const img of images) {
     const asset = await prisma.contentAsset.create({
       data: {
         characterId,
@@ -198,11 +202,15 @@ export async function persistDailyContentPlan(characterId: string, dateISO: stri
         prompt: img.prompt,
         negativePrompt: img.negativePrompt,
         status: "PROMPT_GENERATED",
+        sceneGroupId: img.sceneGroupId,
       },
     });
     createdIds.images.push(asset.id);
 
-    const caption = generateCaption(img.genre, `${dateISO}-image-${img.genre}-${i}`);
+    // Same seed for every angle sibling in a scene (img.sceneGroupId) so
+    // they share one caption — a "moment" should read as one post, not
+    // 4 unrelated captions depending on which angle got used.
+    const caption = generateCaption(img.genre, img.sceneGroupId);
     await prisma.caption.create({
       data: { characterId, contentAssetId: asset.id, text: caption.text, hashtags: JSON.stringify(caption.hashtags) },
     });
