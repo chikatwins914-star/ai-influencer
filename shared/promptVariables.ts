@@ -103,21 +103,21 @@ export const GENRE_VARIANTS: Record<ContentGenre, SceneVariant[]> = {
   BEACH: [
     {
       location: "turquoise water beach with palm trees",
-      outfit: "yellow triangle bikini",
+      outfit: "flowy yellow linen sundress",
       action: "walking along the shoreline, hair blowing in the wind",
       lighting: "bright tropical midday sun",
       cameraFraming: "full body, walking toward camera",
     },
     {
       location: "beach with palm trees, straw hat visible",
-      outfit: "mint green bikini with straw hat",
+      outfit: "white cotton beach dress with a straw hat",
       action: "sitting on the sand, candid laughing selfie",
       lighting: "warm golden hour light",
       cameraFraming: "selfie close-up",
     },
     {
       location: "beach under palm trees",
-      outfit: "red bikini set",
+      outfit: "red wrap-style beach dress",
       action: "playful pose reaching up to a palm branch, smiling",
       lighting: "bright tropical sunlight",
       cameraFraming: "medium to full body",
@@ -273,7 +273,7 @@ export const GENRE_HASHTAGS: Record<ContentGenre, string[]> = {
   MORNING_ROUTINE: ["#morningroutine", "#thatgirl", "#healthyhabits"],
   COFFEE: ["#coffeelover", "#cafevibes", "#latteart"],
   TENNIS: ["#tennisgirl", "#tennislife", "#tennisplayer"],
-  BEACH: ["#beachday", "#beachvibes", "#bikinigirl"],
+  BEACH: ["#beachday", "#beachvibes", "#summerdress"],
   MIRROR_SELFIE: ["#ootd", "#mirrorselfie", "#fitcheck"],
   HEALTHY_FOOD: ["#healthyfood", "#acaibowl", "#foodie"],
   TRAVEL: ["#studyabroad", "#traveldiaries", "#canadalife"],
