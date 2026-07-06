@@ -93,7 +93,7 @@ export function buildImagePrompt(character: CharacterForPrompt, genre: ContentGe
     variant.cameraFraming,
     "an expensive lifestyle moment captured by accident, like a real travel memory rather than a staged photoshoot",
     "ultra-photorealistic smartphone photography shot on an iPhone 17 Pro Max",
-    "natural imperfections, realistic asymmetry, authentic posture, visible skin texture, pores, natural lighting, fox-effect eyelashes",
+    "natural imperfections, realistic asymmetry, authentic candid moment, natural lighting, fox-effect eyelashes",
     "raw unedited photo aesthetic, no artificial beauty retouching, no studio perfection",
   ].join(", ");
 
