@@ -1,7 +1,8 @@
 import path from "node:path";
+import { writeFile } from "node:fs/promises";
 import { prisma } from "../utils/prisma.js";
 import { logger } from "../utils/logger.js";
-import { getImageProvider, getVideoProvider } from "./generation/providerFactory.js";
+import { getFaceSwapProvider, getImageProvider, getVideoProvider } from "./generation/providerFactory.js";
 import { sleep } from "./generation/providerUtils.js";
 
 export interface AssetGenerationOutcome {
@@ -77,6 +78,7 @@ async function generateFromAsset(
             prompt: asset.prompt,
             negativePrompt: asset.negativePrompt,
             videoStructure: asset.videoStructure ? JSON.parse(asset.videoStructure) : undefined,
+            referenceImagePaths,
           })
         : await getImageProvider().generate({
             assetId: asset.id,
@@ -86,17 +88,39 @@ async function generateFromAsset(
             referenceImagePaths,
           });
 
+    const filePath =
+      asset.type === "VIDEO_REEL" || !referenceImagePaths[0]
+        ? result.filePath
+        : await applyFaceSwap(referenceImagePaths[0], result.filePath);
+
     // Generation already succeeded (and, with a real provider, already cost
     // money) at this point, so the DB write gets a few retries — a stranded
     // transient DB error here would otherwise look identical to a failed,
     // safe-to-retry generation and risk paying for the same asset twice.
-    await persistGeneratedStatus(asset.id, result.filePath);
+    await persistGeneratedStatus(asset.id, filePath);
 
-    return { assetId: asset.id, status: "ASSET_GENERATED", filePath: result.filePath };
+    return { assetId: asset.id, status: "ASSET_GENERATED", filePath };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     logger.error({ err, assetId: asset.id }, "Asset generation failed");
     return { assetId: asset.id, status: "FAILED", error: message };
+  }
+}
+
+/** Swaps the generated image's face for the character's exact reference
+ * photo face. Failures here are logged and swallowed rather than failing
+ * the whole asset — the un-swapped image is still a valid, already-paid-for
+ * result, and losing it to a cosmetic post-processing hiccup would be worse
+ * than shipping a slightly-off face. */
+async function applyFaceSwap(referencePhotoPath: string, filePath: string): Promise<string> {
+  try {
+    const swapped = await getFaceSwapProvider().swap(referencePhotoPath, filePath);
+    if (!swapped) return filePath;
+    await writeFile(filePath, swapped);
+    return filePath;
+  } catch (err) {
+    logger.warn({ err, filePath }, "Face-swap post-processing failed — keeping the original generated image");
+    return filePath;
   }
 }
 
