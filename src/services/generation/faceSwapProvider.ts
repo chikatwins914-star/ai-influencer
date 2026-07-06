@@ -20,11 +20,12 @@ export class NoopFaceSwapProvider implements FaceSwapProvider {
 }
 
 const REPLICATE_BASE_URL = "https://api.replicate.com/v1";
-// https://replicate.com/cdingram/face-swap — addressed by owner/name rather
-// than a pinned version hash, so Replicate always runs that model's latest
-// published version for us instead of us tracking a hash that goes stale.
-const MODEL_OWNER = "cdingram";
-const MODEL_NAME = "face-swap";
+// https://replicate.com/cdingram/face-swap/api — this model doesn't support
+// the version-less "/v1/models/{owner}/{name}/predictions" shortcut (that
+// 404s), so the version hash has to be pinned explicitly. Re-check
+// https://replicate.com/cdingram/face-swap/versions if this ever needs
+// bumping to a newer published version.
+const MODEL_VERSION = "d1d6ea8c8be89d664a07a457526f7128109dee7030fdea7cddca9968ffe38b8";
 const POLL_INTERVAL_MS = 3_000;
 const MAX_POLL_ATTEMPTS = 40; // ~2 minutes
 
@@ -61,13 +62,14 @@ export class ReplicateFaceSwapProvider implements FaceSwapProvider {
 
     // cdingram/face-swap's schema: input_image is the target (base) photo,
     // swap_image is the face to transplant onto it.
-    const response = await fetch(`${REPLICATE_BASE_URL}/models/${MODEL_OWNER}/${MODEL_NAME}/predictions`, {
+    const response = await fetch(`${REPLICATE_BASE_URL}/predictions`, {
       method: "POST",
       headers: {
         Authorization: `Token ${config.generation.faceSwapApiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        version: MODEL_VERSION,
         input: { input_image: inputImage, swap_image: swapImage },
       }),
     });

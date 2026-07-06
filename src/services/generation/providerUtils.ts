@@ -2,9 +2,15 @@ import { writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 
 /** Single source of truth for where generated files live on disk — also
- * used by src/index.ts to mount static serving at the matching /media/* route. */
-export const IMAGES_ROOT = path.resolve(process.cwd(), "assets/images");
-export const VIDEOS_ROOT = path.resolve(process.cwd(), "assets/videos");
+ * used by src/index.ts to mount static serving at the matching /media/* route.
+ * Both live under one shared "generated" parent (rather than directly under
+ * assets/) so a single persistent-storage volume mounted at that one path
+ * covers images and videos together, without needing a second volume and
+ * without overlapping assets/characters (the checked-in character
+ * definitions/reference photos, which must NOT sit under a volume mount or
+ * they'd be shadowed by the volume's own — initially empty — contents). */
+export const IMAGES_ROOT = path.resolve(process.cwd(), "assets/generated/images");
+export const VIDEOS_ROOT = path.resolve(process.cwd(), "assets/generated/videos");
 
 /**
  * Shared "write a generated asset to disk" step used by every provider
