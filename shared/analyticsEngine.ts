@@ -11,6 +11,10 @@ export interface WeeklyMetrics {
   igSaveRate: number | null; // 0-1
   igRetentionRate: number | null; // 0-1
   igFollowerGrowth: number | null; // absolute change
+  ttViews: number | null;
+  ttLikes: number | null;
+  ttFollowerGrowth: number | null; // absolute change
+  ttEngagementRate: number | null; // 0-1, (likes+comments+shares)/views
   fanvueRevenue: number | null;
   fanvueCvr: number | null; // 0-1
   ugcDealCloseRate: number | null; // 0-1
@@ -49,6 +53,23 @@ export function generateRecommendations(current: WeeklyMetrics, previous: Weekly
     );
   }
 
+  const ttViewsChange = previous ? pctChange(current.ttViews, previous.ttViews) : null;
+  if (ttViewsChange !== null && ttViewsChange < -0.1) {
+    recs.push(
+      "TikTokの再生数が先週比10%以上低下。最初の1-2秒のフックを強める、トレンド音源・トレンドフォーマットへの乗り換え、投稿頻度の見直しを検討。"
+    );
+  }
+
+  if (current.ttEngagementRate !== null && current.ttEngagementRate < 0.03) {
+    recs.push(
+      "TikTokのエンゲージメント率が低め(3%未満の目安)。コメントを誘発する一言(質問・煽り)をキャプションや動画内テキストに追加することを検討。"
+    );
+  }
+
+  if (current.ttFollowerGrowth !== null && current.ttFollowerGrowth <= 0) {
+    recs.push("TikTokのフォロワー増加が停滞/減少。投稿頻度と、Instagramでバズった企画をTikTok向けに再構成して投稿することを検討。");
+  }
+
   if (current.fanvueCvr !== null && current.fanvueCvr < 0.01) {
     recs.push(
       "Instagram→Fanvueの転換率が低め(1%未満の目安)。バイオリンクの視認性、キャプションCTAの頻度、Fanvue側のウェルカムメッセージ/価格設定を見直すことを検討。"
@@ -81,6 +102,15 @@ export function summarizeWeek(current: WeeklyMetrics, previous: WeeklyMetrics | 
   }
   if (current.igFollowerGrowth !== null) {
     parts.push(`フォロワー増減: ${current.igFollowerGrowth >= 0 ? "+" : ""}${current.igFollowerGrowth}`);
+  }
+  if (current.ttViews !== null) {
+    const change = previous ? pctChange(current.ttViews, previous.ttViews) : null;
+    parts.push(
+      `TikTok再生数: ${current.ttViews.toLocaleString()}${change !== null ? `(前週比${(change * 100).toFixed(1)}%)` : ""}`
+    );
+  }
+  if (current.ttFollowerGrowth !== null) {
+    parts.push(`TikTokフォロワー増減: ${current.ttFollowerGrowth >= 0 ? "+" : ""}${current.ttFollowerGrowth}`);
   }
   if (current.fanvueRevenue !== null) {
     parts.push(`Fanvue売上: $${current.fanvueRevenue.toLocaleString()}`);

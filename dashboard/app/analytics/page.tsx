@@ -11,6 +11,10 @@ interface SnapshotForm {
   igSaveRate: string;
   igRetentionRate: string;
   igFollowerGrowth: string;
+  ttViews: string;
+  ttLikes: string;
+  ttFollowerGrowth: string;
+  ttEngagementRate: string;
   fanvueRevenue: string;
   fanvueCvr: string;
   ugcDealCloseRate: string;
@@ -23,6 +27,10 @@ const EMPTY_FORM: SnapshotForm = {
   igSaveRate: "",
   igRetentionRate: "",
   igFollowerGrowth: "",
+  ttViews: "",
+  ttLikes: "",
+  ttFollowerGrowth: "",
+  ttEngagementRate: "",
   fanvueRevenue: "",
   fanvueCvr: "",
   ugcDealCloseRate: "",
@@ -33,6 +41,10 @@ const FIELD_LABEL: Record<keyof Omit<SnapshotForm, "periodStart" | "periodEnd">,
   igSaveRate: "IG保存率 (0-1)",
   igRetentionRate: "IG視聴維持率 (0-1)",
   igFollowerGrowth: "IGフォロワー増加数",
+  ttViews: "TikTok再生数",
+  ttLikes: "TikTokいいね数",
+  ttFollowerGrowth: "TikTokフォロワー増加数",
+  ttEngagementRate: "TikTokエンゲージメント率 (0-1)",
   fanvueRevenue: "Fanvue売上",
   fanvueCvr: "Fanvue CVR (0-1)",
   ugcDealCloseRate: "UGC成約率 (0-1)",
@@ -188,6 +200,8 @@ export default function AnalyticsPage() {
               <th>期間</th>
               <th>IGリーチ</th>
               <th>IG保存率</th>
+              <th>TikTok再生数</th>
+              <th>TikTokエンゲージメント率</th>
               <th>Fanvue売上</th>
               <th>Fanvue CVR</th>
             </tr>
@@ -201,6 +215,8 @@ export default function AnalyticsPage() {
                 </td>
                 <td>{s.igReach ?? "-"}</td>
                 <td>{s.igSaveRate != null ? `${(s.igSaveRate * 100).toFixed(1)}%` : "-"}</td>
+                <td>{s.ttViews ?? "-"}</td>
+                <td>{s.ttEngagementRate != null ? `${(s.ttEngagementRate * 100).toFixed(1)}%` : "-"}</td>
                 <td>{s.fanvueRevenue != null ? `$${s.fanvueRevenue}` : "-"}</td>
                 <td>{s.fanvueCvr != null ? `${(s.fanvueCvr * 100).toFixed(1)}%` : "-"}</td>
               </tr>

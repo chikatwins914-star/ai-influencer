@@ -242,6 +242,10 @@ model AnalyticsSnapshot {
   igSaveRate        Float?
   igRetentionRate   Float?
   igFollowerGrowth  Int?
+  ttViews           Int?
+  ttLikes           Int?
+  ttFollowerGrowth  Int?
+  ttEngagementRate  Float?
   fanvueRevenue     Float?
   fanvueCvr         Float?
   ugcDealCloseRate  Float?

@@ -19,6 +19,10 @@ export async function recordWeeklySnapshot(input: RecordWeeklySnapshotInput) {
       igSaveRate: input.igSaveRate,
       igRetentionRate: input.igRetentionRate,
       igFollowerGrowth: input.igFollowerGrowth,
+      ttViews: input.ttViews,
+      ttLikes: input.ttLikes,
+      ttFollowerGrowth: input.ttFollowerGrowth,
+      ttEngagementRate: input.ttEngagementRate,
       fanvueRevenue: input.fanvueRevenue,
       fanvueCvr: input.fanvueCvr,
       ugcDealCloseRate: input.ugcDealCloseRate,
@@ -33,6 +37,10 @@ function toMetrics(snapshot: {
   igSaveRate: number | null;
   igRetentionRate: number | null;
   igFollowerGrowth: number | null;
+  ttViews: number | null;
+  ttLikes: number | null;
+  ttFollowerGrowth: number | null;
+  ttEngagementRate: number | null;
   fanvueRevenue: number | null;
   fanvueCvr: number | null;
   ugcDealCloseRate: number | null;
@@ -42,6 +50,10 @@ function toMetrics(snapshot: {
     igSaveRate: snapshot.igSaveRate,
     igRetentionRate: snapshot.igRetentionRate,
     igFollowerGrowth: snapshot.igFollowerGrowth,
+    ttViews: snapshot.ttViews,
+    ttLikes: snapshot.ttLikes,
+    ttFollowerGrowth: snapshot.ttFollowerGrowth,
+    ttEngagementRate: snapshot.ttEngagementRate,
     fanvueRevenue: snapshot.fanvueRevenue,
     fanvueCvr: snapshot.fanvueCvr,
     ugcDealCloseRate: snapshot.ugcDealCloseRate,
@@ -97,6 +109,10 @@ async function writeWeeklyReportFile(
     igSaveRate: number | null;
     igRetentionRate: number | null;
     igFollowerGrowth: number | null;
+    ttViews: number | null;
+    ttLikes: number | null;
+    ttFollowerGrowth: number | null;
+    ttEngagementRate: number | null;
     fanvueRevenue: number | null;
     fanvueCvr: number | null;
     ugcDealCloseRate: number | null;
@@ -122,6 +138,12 @@ async function writeWeeklyReportFile(
     `- Save rate: ${fmtPct(snapshot.igSaveRate)}`,
     `- Reel retention rate: ${fmtPct(snapshot.igRetentionRate)}`,
     `- Follower growth: ${snapshot.igFollowerGrowth ?? "—"}`,
+    "",
+    `## TikTok`,
+    `- Views: ${fmtNum(snapshot.ttViews)}`,
+    `- Likes: ${fmtNum(snapshot.ttLikes)}`,
+    `- Engagement rate: ${fmtPct(snapshot.ttEngagementRate)}`,
+    `- Follower growth: ${snapshot.ttFollowerGrowth ?? "—"}`,
     "",
     `## Fanvue`,
     `- Revenue: ${snapshot.fanvueRevenue === null ? "—" : `$${snapshot.fanvueRevenue.toLocaleString()}`}`,
