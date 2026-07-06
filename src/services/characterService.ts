@@ -81,7 +81,7 @@ export async function seedDefaultCharacters(): Promise<{ seeded: string[]; skipp
  * Convenience: parses JSON array fields back out for API responses.
  */
 export function deserializeCharacter<T extends Record<string, unknown>>(character: T) {
-  const arrayFields = ["hobbies", "favoriteFoods", "dislikedFoods", "accessories"] as const;
+  const arrayFields = ["hobbies", "favoriteFoods", "dislikedFoods", "accessories", "referenceImages"] as const;
   const result: Record<string, unknown> = { ...character };
 
   for (const field of arrayFields) {

@@ -38,6 +38,7 @@ model Character {
   skinDescription String
   accessories   String // JSON-encoded string array
   worldview     String
+  referenceImages String @default("[]") // JSON-encoded string array of file paths, used for face-consistent image generation
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
