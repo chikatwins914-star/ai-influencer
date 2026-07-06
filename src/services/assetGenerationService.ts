@@ -113,10 +113,17 @@ async function generateFromAsset(
  * result, and losing it to a cosmetic post-processing hiccup would be worse
  * than shipping a slightly-off face. */
 async function applyFaceSwap(referencePhotoPath: string, filePath: string): Promise<string> {
+  const provider = getFaceSwapProvider();
+  if (provider.name === "none") {
+    logger.info({ filePath }, "Face-swap post-processing skipped (FACE_SWAP_PROVIDER is not set to a real provider)");
+    return filePath;
+  }
+
   try {
-    const swapped = await getFaceSwapProvider().swap(referencePhotoPath, filePath);
+    const swapped = await provider.swap(referencePhotoPath, filePath);
     if (!swapped) return filePath;
     await writeFile(filePath, swapped);
+    logger.info({ filePath, provider: provider.name }, "Face-swap post-processing applied");
     return filePath;
   } catch (err) {
     logger.warn({ err, filePath }, "Face-swap post-processing failed — keeping the original generated image");
