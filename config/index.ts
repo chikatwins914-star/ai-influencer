@@ -23,11 +23,16 @@ const EnvSchema = z.object({
   // pair rather than a plain bearer token, so it needs its own two vars.
   KLING_ACCESS_KEY: z.string().optional(),
   KLING_SECRET_KEY: z.string().optional(),
+  // Post-processing step run after image generation: swaps the generated
+  // face for the character's actual reference-photo face. Off by default
+  // since it's an extra paid API call on top of image generation.
+  FACE_SWAP_API_KEY: z.string().optional(),
   // Only providers with an actual implementation in src/services/generation/
   // belong in these enums — an accepted-but-unimplemented value would pass
   // startup validation silently and only fail later, at first use.
   IMAGE_GEN_PROVIDER: z.enum(["local-stub", "stability", "nano-banana"]).default("local-stub"),
   VIDEO_GEN_PROVIDER: z.enum(["local-stub", "seedance", "kling"]).default("local-stub"),
+  FACE_SWAP_PROVIDER: z.enum(["none", "replicate"]).default("none"),
 
   FANVUE_ACCOUNT_EMAIL: z.string().optional(),
   FANVUE_PROFILE_URL: z.string().optional(),
@@ -65,8 +70,10 @@ export const config = {
     videoGenApiKey: parsed.data.VIDEO_GEN_API_KEY,
     klingAccessKey: parsed.data.KLING_ACCESS_KEY,
     klingSecretKey: parsed.data.KLING_SECRET_KEY,
+    faceSwapApiKey: parsed.data.FACE_SWAP_API_KEY,
     imageProvider: parsed.data.IMAGE_GEN_PROVIDER,
     videoProvider: parsed.data.VIDEO_GEN_PROVIDER,
+    faceSwapProvider: parsed.data.FACE_SWAP_PROVIDER,
   },
   fanvue: {
     accountEmail: parsed.data.FANVUE_ACCOUNT_EMAIL,
