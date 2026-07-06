@@ -56,8 +56,11 @@ npm run dev
 | 動画(デフォルト) | `VIDEO_GEN_PROVIDER=local-stub` | 課金なし。作業チケットのJSONを書き出すだけ |
 | 動画 | `VIDEO_GEN_PROVIDER=seedance` + `VIDEO_GEN_API_KEY`(Volcengine Arkキー) | ByteDance Seedance 2.0(非同期タスク、生成に数分かかる場合あり) |
 
-生成したファイルは `assets/images/` `assets/videos/` 配下に保存されます(いずれも生成物なので
-`.gitignore` 済み)。`POST /api/content/generate-assets` はバッチ内の一部が失敗しても残りの結果を
+生成したファイルは `assets/generated/images/` `assets/generated/videos/` 配下に保存されます
+(いずれも生成物なので `.gitignore` 済み)。本番でこのディレクトリを永続化する場合は、
+`assets/generated/` 全体を1つのボリュームでマウントしてください — `assets/characters/`
+(キャラクター定義・参考写真)はGit管理のファイルなので、ボリュームの配下に含めないでください
+(含めるとボリュームの空の中身に上書き・隠されてしまいます)。`POST /api/content/generate-assets` はバッチ内の一部が失敗しても残りの結果を
 返します(全成功=201、一部失敗=207、全失敗=502)。
 
 ## Instagram APIへの接続について

@@ -9,5 +9,4 @@ build/
 *.db
 *.db-journal
 assets/prompts/
-assets/videos/
-assets/images/
+assets/generated/
