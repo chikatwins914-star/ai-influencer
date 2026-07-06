@@ -20,9 +20,9 @@ export class NoopFaceSwapProvider implements FaceSwapProvider {
 }
 
 const REPLICATE_BASE_URL = "https://api.replicate.com/v1";
-// https://replicate.com/cdingram/face-swap/api — this model doesn't support
-// the version-less "/v1/models/{owner}/{name}/predictions" shortcut (that
-// 404s), so the version hash has to be pinned explicitly. Re-check
+// https://replicate.com/cdingram/face-swap/api (HTTP tab) — this is the
+// exact request shape Replicate's own docs show for this model: flat
+// /v1/predictions with the version hash in the body. Re-check
 // https://replicate.com/cdingram/face-swap/versions if this ever needs
 // bumping to a newer published version.
 const MODEL_VERSION = "d1d6ea8c8be89d664a07a457526f7128109dee7030fdea7cddca9968ffe38b8";
@@ -65,7 +65,7 @@ export class ReplicateFaceSwapProvider implements FaceSwapProvider {
     const response = await fetch(`${REPLICATE_BASE_URL}/predictions`, {
       method: "POST",
       headers: {
-        Authorization: `Token ${config.generation.faceSwapApiKey}`,
+        Authorization: `Bearer ${config.generation.faceSwapApiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -84,7 +84,7 @@ export class ReplicateFaceSwapProvider implements FaceSwapProvider {
   private async pollUntilComplete(predictionId: string): Promise<string> {
     for (let attempt = 0; attempt < MAX_POLL_ATTEMPTS; attempt++) {
       const response = await fetch(`${REPLICATE_BASE_URL}/predictions/${predictionId}`, {
-        headers: { Authorization: `Token ${config.generation.faceSwapApiKey}` },
+        headers: { Authorization: `Bearer ${config.generation.faceSwapApiKey}` },
       });
 
       await assertOk(response, "Replicate API");
