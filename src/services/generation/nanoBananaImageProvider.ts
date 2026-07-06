@@ -39,8 +39,12 @@ export class NanoBananaImageProvider implements ImageGenerationProvider {
         body: JSON.stringify({
           contents: [{ parts }],
           // Gemini image models are multimodal and always return a text part
-          // alongside the image — requesting IMAGE alone is rejected.
-          generationConfig: { responseModalities: ["TEXT", "IMAGE"] },
+          // alongside the image — requesting IMAGE alone is rejected. 9:16
+          // matches Instagram Reels/Stories and TikTok's vertical format.
+          generationConfig: {
+            responseModalities: ["TEXT", "IMAGE"],
+            imageConfig: { aspectRatio: "9:16" },
+          },
         }),
       }
     );
