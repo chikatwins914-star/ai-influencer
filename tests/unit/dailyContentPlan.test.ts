@@ -6,7 +6,7 @@ import {
   generateDailyVideoPrompts,
   generateDailyStoryPrompts,
 } from "../../src/services/promptService.js";
-import type { CharacterForPrompt } from "../../shared/promptEngine.js";
+import { ANGLE_VARIANTS, type CharacterForPrompt } from "../../shared/promptEngine.js";
 
 const maria: CharacterForPrompt = {
   name: "Maria",
@@ -20,12 +20,12 @@ const maria: CharacterForPrompt = {
 };
 
 describe("daily content quotas", () => {
-  it("GENRE_DAILY_QUOTA sums to the configured daily image target", () => {
-    const total = Object.values(GENRE_DAILY_QUOTA).reduce((sum, n) => sum + n, 0);
-    expect(total).toBe(config.targets.imagesPerDay);
+  it("GENRE_DAILY_QUOTA (scenes) times the angle count matches the daily image target", () => {
+    const totalScenes = Object.values(GENRE_DAILY_QUOTA).reduce((sum, n) => sum + n, 0);
+    expect(totalScenes * ANGLE_VARIANTS.length).toBe(config.targets.imagesPerDay);
   });
 
-  it("generates exactly 20 image prompts for a day", () => {
+  it("generates exactly 20 image prompts for a day (one per angle per scene)", () => {
     const images = generateDailyImagePrompts(maria, "2026-07-04");
     expect(images).toHaveLength(20);
   });
@@ -40,10 +40,9 @@ describe("daily content quotas", () => {
     expect(stories).toHaveLength(5);
   });
 
-  it("includes student-life genres (room selfie / library study) in the pool", () => {
+  it("only generates the 3 enabled genres (room selfie / beach / casual date)", () => {
     const images = generateDailyImagePrompts(maria, "2026-07-04");
     const genres = new Set(images.map((i) => i.genre));
-    expect(genres.has("ROOM_SELFIE")).toBe(true);
-    expect(genres.has("LIBRARY_STUDY")).toBe(true);
+    expect(genres).toEqual(new Set(["ROOM_SELFIE", "BEACH", "CASUAL_DATE"]));
   });
 });

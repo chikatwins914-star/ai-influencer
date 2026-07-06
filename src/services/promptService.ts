@@ -5,6 +5,7 @@ import { ALL_CONTENT_GENRES, type ContentGenre } from "../../shared/types.js";
 import {
   buildImagePrompt,
   buildHashtags,
+  ANGLE_VARIANTS,
   type CharacterForPrompt,
 } from "../../shared/promptEngine.js";
 import { getVideoTemplate } from "../../shared/videoPromptTemplates.js";
@@ -65,7 +66,14 @@ export interface DailyImagePromptResult {
   negativePrompt: string;
 }
 
-/** Generates the day's image prompts — target: 20/day, distributed per GENRE_DAILY_QUOTA. */
+/**
+ * Generates the day's image prompts — target: 20 scenes/day, distributed
+ * per GENRE_DAILY_QUOTA, each scene expanded into one prompt per entry in
+ * ANGLE_VARIANTS (front, side, high-angle body shot, face close-up) so a
+ * single scene reads like a real photo dump instead of one isolated shot.
+ * Same seedKey across angles — only the camera framing changes, the
+ * location/outfit/lighting/action stay identical for a given scene.
+ */
 export function generateDailyImagePrompts(
   character: CharacterForPrompt,
   dateISO: string,
@@ -76,8 +84,10 @@ export function generateDailyImagePrompts(
     const count = quota[genre] ?? 0;
     for (let slot = 0; slot < count; slot++) {
       const seedKey = `${character.name}-${dateISO}-${genre}-${slot}`;
-      const { prompt, negativePrompt } = buildImagePrompt(character, genre, seedKey);
-      results.push({ genre, prompt, negativePrompt });
+      for (const angle of ANGLE_VARIANTS) {
+        const { prompt, negativePrompt } = buildImagePrompt(character, genre, seedKey, angle);
+        results.push({ genre, prompt, negativePrompt });
+      }
     }
   }
   return results;

@@ -285,22 +285,25 @@ export const GENRE_HASHTAGS: Record<ContentGenre, string[]> = {
 };
 
 /**
- * Daily image quota per genre. Must sum to config.targets.imagesPerDay (20).
- * Weighted toward genres that suit an international-student persona
- * (room selfie / library study) while keeping the original lifestyle mix.
+ * Daily image *scene* quota per genre — each scene expands into
+ * ANGLE_VARIANTS.length (4) images, so this must sum to
+ * config.targets.imagesPerDay / 4 (= 5) to hit the 20 images/day target.
+ * Narrowed down to only ROOM_SELFIE/BEACH/CASUAL_DATE per explicit request
+ * — all other genres are kept in the Record (for type completeness and in
+ * case they're re-enabled later) but at 0.
  */
 export const GENRE_DAILY_QUOTA: Record<ContentGenre, number> = {
-  GYM: 1,
-  MORNING_ROUTINE: 2,
-  COFFEE: 2,
-  TENNIS: 1,
-  BEACH: 1,
-  MIRROR_SELFIE: 2,
-  HEALTHY_FOOD: 2,
-  TRAVEL: 1,
+  GYM: 0,
+  MORNING_ROUTINE: 0,
+  COFFEE: 0,
+  TENNIS: 0,
+  BEACH: 2,
+  MIRROR_SELFIE: 0,
+  HEALTHY_FOOD: 0,
+  TRAVEL: 0,
   CASUAL_DATE: 1,
-  BEHIND_THE_SCENES: 1,
+  BEHIND_THE_SCENES: 0,
   ROOM_SELFIE: 2,
-  LIBRARY_STUDY: 2,
-  MOTIVATION: 2,
+  LIBRARY_STUDY: 0,
+  MOTIVATION: 0,
 };
