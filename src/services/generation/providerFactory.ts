@@ -5,7 +5,12 @@ import { StabilityImageProvider } from "./stabilityImageProvider.js";
 import { NanoBananaImageProvider } from "./nanoBananaImageProvider.js";
 import { SeedanceVideoProvider } from "./seedanceVideoProvider.js";
 import { KlingVideoProvider } from "./klingVideoProvider.js";
-import { NoopFaceSwapProvider, ReplicateFaceSwapProvider, type FaceSwapProvider } from "./faceSwapProvider.js";
+import {
+  NoopFaceSwapProvider,
+  PiApiFaceSwapProvider,
+  ReplicateFaceSwapProvider,
+  type FaceSwapProvider,
+} from "./faceSwapProvider.js";
 
 /** Selects the image provider per IMAGE_GEN_PROVIDER — defaults to the offline stub. */
 export function getImageProvider(): ImageGenerationProvider {
@@ -36,6 +41,8 @@ export function getFaceSwapProvider(): FaceSwapProvider {
   switch (config.generation.faceSwapProvider) {
     case "replicate":
       return new ReplicateFaceSwapProvider();
+    case "piapi":
+      return new PiApiFaceSwapProvider();
     case "none":
       return new NoopFaceSwapProvider();
   }

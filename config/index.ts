@@ -32,7 +32,7 @@ const EnvSchema = z.object({
   // startup validation silently and only fail later, at first use.
   IMAGE_GEN_PROVIDER: z.enum(["local-stub", "stability", "nano-banana"]).default("local-stub"),
   VIDEO_GEN_PROVIDER: z.enum(["local-stub", "seedance", "kling"]).default("local-stub"),
-  FACE_SWAP_PROVIDER: z.enum(["none", "replicate"]).default("none"),
+  FACE_SWAP_PROVIDER: z.enum(["none", "replicate", "piapi"]).default("none"),
 
   FANVUE_ACCOUNT_EMAIL: z.string().optional(),
   FANVUE_PROFILE_URL: z.string().optional(),

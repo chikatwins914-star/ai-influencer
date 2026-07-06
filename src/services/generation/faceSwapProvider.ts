@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import Replicate from "replicate";
 import { config } from "../../../config/index.js";
-import { assertOk } from "./providerUtils.js";
+import { assertOk, sleep } from "./providerUtils.js";
 
 export interface FaceSwapProvider {
   readonly name: string;
@@ -78,4 +78,112 @@ async function toDataUri(filePath: string): Promise<string> {
   const ext = filePath.split(".").pop()?.toLowerCase();
   const mimeType = ext === "jpg" || ext === "jpeg" ? "image/jpeg" : ext === "webp" ? "image/webp" : "image/png";
   return `data:${mimeType};base64,${data.toString("base64")}`;
+}
+
+const PIAPI_BASE_URL = "https://api.piapi.ai/api/v1";
+const PIAPI_POLL_INTERVAL_MS = 3_000;
+const PIAPI_MAX_POLL_ATTEMPTS = 40; // ~2 minutes
+
+/**
+ * Real provider wiring for PiAPI's Faceswap API
+ * (https://piapi.ai/docs/faceswap-api/create-task), switched to after
+ * ReplicateFaceSwapProvider hit a persistent, unresolved 422 in production
+ * despite the model/version/token/billing all checking out independently.
+ * Async task-based: POST creates a task, GET polls it by id.
+ *
+ * NOT exercised in this sandbox (no network access to api.piapi.ai here) —
+ * activate once FACE_SWAP_PROVIDER=piapi and FACE_SWAP_API_KEY (a PiAPI
+ * key) are set. The exact key name PiAPI uses inside a completed task's
+ * `output` object for the result image URL was not confirmed against a
+ * live response before shipping this (the interactive docs playground was
+ * impractical to drive manually) — findOutputUrl() below checks several
+ * plausible key names and throws a clear, loggable error listing the
+ * actual output shape if none match, so this is diagnosable from
+ * production logs on the first real run instead of guessing further.
+ */
+export class PiApiFaceSwapProvider implements FaceSwapProvider {
+  readonly name = "piapi";
+
+  async swap(referencePhotoPath: string, generatedImagePath: string): Promise<Buffer | null> {
+    if (!config.generation.faceSwapApiKey) {
+      throw new Error("FACE_SWAP_API_KEY is not set — cannot use the piapi face-swap provider");
+    }
+
+    const taskId = await this.submit(referencePhotoPath, generatedImagePath);
+    const outputUrl = await this.pollUntilComplete(taskId);
+
+    const response = await fetch(outputUrl);
+    await assertOk(response, "PiAPI face-swap output download");
+    return Buffer.from(await response.arrayBuffer());
+  }
+
+  private async submit(referencePhotoPath: string, generatedImagePath: string): Promise<string> {
+    const [swapImage, targetImage] = await Promise.all([toDataUri(referencePhotoPath), toDataUri(generatedImagePath)]);
+
+    const response = await fetch(`${PIAPI_BASE_URL}/task`, {
+      method: "POST",
+      headers: {
+        "x-api-key": config.generation.faceSwapApiKey!,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "Qubico/image-toolkit",
+        task_type: "face-swap",
+        input: { target_image: targetImage, swap_image: swapImage },
+      }),
+    });
+
+    await assertOk(response, "PiAPI");
+
+    const json = (await response.json()) as PiApiTaskResponse;
+    if (!json.data?.task_id) throw new Error("PiAPI task creation response did not include a task_id");
+    return json.data.task_id;
+  }
+
+  private async pollUntilComplete(taskId: string): Promise<string> {
+    for (let attempt = 0; attempt < PIAPI_MAX_POLL_ATTEMPTS; attempt++) {
+      const response = await fetch(`${PIAPI_BASE_URL}/task/${taskId}`, {
+        headers: { "x-api-key": config.generation.faceSwapApiKey! },
+      });
+
+      await assertOk(response, "PiAPI");
+
+      const json = (await response.json()) as PiApiTaskResponse;
+      const status = json.data?.status;
+      if (status === "completed") {
+        return findOutputUrl(json.data?.output);
+      }
+      if (status === "failed") {
+        throw new Error(`PiAPI task failed: ${json.data?.error?.message || "unknown error"}`);
+      }
+
+      const isLastAttempt = attempt === PIAPI_MAX_POLL_ATTEMPTS - 1;
+      if (!isLastAttempt) await sleep(PIAPI_POLL_INTERVAL_MS);
+    }
+    throw new Error(`PiAPI task ${taskId} did not complete within the polling window`);
+  }
+}
+
+/** Checks the plausible key names PiAPI's other Qubico-family endpoints use
+ * for a result image URL, since a live "completed" response wasn't
+ * available to confirm the exact one for face-swap specifically. */
+function findOutputUrl(output: Record<string, unknown> | undefined): string {
+  const candidateKeys = ["image_url", "image", "url", "result_url", "output_url"];
+  for (const key of candidateKeys) {
+    const value = output?.[key];
+    if (typeof value === "string" && value) return value;
+    if (Array.isArray(value) && typeof value[0] === "string") return value[0];
+  }
+  throw new Error(
+    `PiAPI task completed but no known output URL field was found — actual output shape: ${JSON.stringify(output)}`
+  );
+}
+
+interface PiApiTaskResponse {
+  data?: {
+    task_id?: string;
+    status?: "completed" | "processing" | "pending" | "failed" | "staged";
+    output?: Record<string, unknown>;
+    error?: { message?: string };
+  };
 }
