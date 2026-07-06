@@ -10,6 +10,7 @@ import { instagramRouter } from "./routes/instagram.js";
 import { calendarRouter } from "./routes/calendar.js";
 import { fanvueRouter } from "./routes/fanvue.js";
 import { analyticsRouter } from "./routes/analytics.js";
+import { ugcRouter } from "./routes/ugc.js";
 
 // Allows the production dashboard domain, any Vercel preview deployment for
 // the same project (ai-influencer-c1g7-<branch/hash>-<team>.vercel.app —
@@ -42,9 +43,7 @@ app.use("/api/instagram", instagramRouter);
 app.use("/api/calendar", calendarRouter);
 app.use("/api/fanvue", fanvueRouter);
 app.use("/api/analytics", analyticsRouter);
-
-// Remaining phase-by-phase routers will be mounted here as they're implemented:
-// app.use("/api/ugc", ugcRouter);
+app.use("/api/ugc", ugcRouter);
 
 app.use(errorHandler);
 

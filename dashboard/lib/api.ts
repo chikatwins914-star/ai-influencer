@@ -91,6 +91,62 @@ export interface AnalyticsSnapshot {
   recommendations: string | null;
 }
 
+export type UGCCategory =
+  | "SKINCARE"
+  | "SUPPLEMENT"
+  | "SPORTS_EQUIPMENT"
+  | "TENNIS_EQUIPMENT"
+  | "BEAUTY"
+  | "GADGET"
+  | "OTHER";
+
+export type UGCStatus =
+  | "LEAD"
+  | "PITCHED"
+  | "NEGOTIATING"
+  | "CONTRACTED"
+  | "IN_PRODUCTION"
+  | "DELIVERED"
+  | "PAID"
+  | "DECLINED";
+
+export interface UGCDeal {
+  id: string;
+  brandName: string;
+  category: UGCCategory;
+  status: UGCStatus;
+  contactEmail: string | null;
+  fee: number | null;
+  script: string | null;
+  deliverablePath: string | null;
+  disclosureConfirmed: boolean;
+  dueDate: string | null;
+  deliveredAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export const ALL_UGC_CATEGORIES: UGCCategory[] = [
+  "SKINCARE",
+  "SUPPLEMENT",
+  "SPORTS_EQUIPMENT",
+  "TENNIS_EQUIPMENT",
+  "BEAUTY",
+  "GADGET",
+  "OTHER",
+];
+
+export const ALL_UGC_STATUSES: UGCStatus[] = [
+  "LEAD",
+  "PITCHED",
+  "NEGOTIATING",
+  "CONTRACTED",
+  "IN_PRODUCTION",
+  "DELIVERED",
+  "PAID",
+  "DECLINED",
+];
+
 export const api = {
   characters: {
     list: () => request<Character[]>("/api/characters"),
@@ -105,6 +161,11 @@ export const api = {
         method: "POST",
         body: JSON.stringify({ characterId }),
       }),
+    generateAssets: (assetIds: string[]) =>
+      request<{ outcomes: Array<{ assetId: string; status: string; filePath?: string; error?: string }> }>(
+        "/api/content/generate-assets",
+        { method: "POST", body: JSON.stringify({ assetIds }) }
+      ),
   },
   instagram: {
     dailyOps: (characterId: string) =>
@@ -123,9 +184,16 @@ export const api = {
       if (to) params.set("to", to);
       return request<CalendarEntry[]>(`/api/calendar?${params.toString()}`);
     },
+    generate: (characterId: string, startDate: string, days?: number) =>
+      request<{ count: number }>("/api/calendar/generate", {
+        method: "POST",
+        body: JSON.stringify({ characterId, startDate, ...(days ? { days } : {}) }),
+      }),
   },
   fanvue: {
     posts: () => request<FanvuePost[]>("/api/fanvue/posts"),
+    createPost: (input: { title: string; description: string; price?: number; scheduledFor?: string }) =>
+      request<FanvuePost>("/api/fanvue/posts", { method: "POST", body: JSON.stringify(input) }),
     funnelCopy: (seedKey: string) =>
       request<{ captionCta: string; bioLine: string; profileUrl: string }>(
         `/api/fanvue/funnel-copy?seedKey=${encodeURIComponent(seedKey)}`
@@ -134,8 +202,31 @@ export const api = {
       request<Array<{ id: string; category: string; template: string; variables: string[] }>>(
         "/api/fanvue/message-templates"
       ),
+    seedMessageTemplates: () =>
+      request<{ created: string[] }>("/api/fanvue/message-templates/seed", { method: "POST" }),
+    draftMessage: (category: string, variables: Record<string, string>) =>
+      request<{ text: string }>(`/api/fanvue/message-templates/${category}/draft`, {
+        method: "POST",
+        body: JSON.stringify({ variables }),
+      }),
   },
   analytics: {
     snapshots: (limit = 10) => request<AnalyticsSnapshot[]>(`/api/analytics/snapshots?limit=${limit}`),
+    recordSnapshot: (input: Record<string, unknown>) =>
+      request<AnalyticsSnapshot>("/api/analytics/snapshot", { method: "POST", body: JSON.stringify(input) }),
+    weeklyReport: () =>
+      request<{ snapshotId: string; summary: string; recommendations: string[]; reportPath: string }>(
+        "/api/analytics/weekly-report",
+        { method: "POST" }
+      ),
+  },
+  ugc: {
+    list: () => request<UGCDeal[]>("/api/ugc"),
+    create: (input: { brandName: string; category: UGCCategory; contactEmail?: string; fee?: number }) =>
+      request<UGCDeal>("/api/ugc", { method: "POST", body: JSON.stringify(input) }),
+    update: (id: string, input: Partial<Pick<UGCDeal, "status" | "category" | "fee" | "contactEmail" | "disclosureConfirmed" | "deliverablePath">>) =>
+      request<UGCDeal>(`/api/ugc/${id}`, { method: "PATCH", body: JSON.stringify(input) }),
+    generateScript: (id: string, productName: string) =>
+      request<UGCDeal>(`/api/ugc/${id}/script`, { method: "POST", body: JSON.stringify({ productName }) }),
   },
 };
