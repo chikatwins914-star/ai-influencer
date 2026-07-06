@@ -54,7 +54,19 @@ export class NanoBananaImageProvider implements ImageGenerationProvider {
     const json = (await response.json()) as GeminiGenerateContentResponse;
     const inlineData = json.candidates?.[0]?.content?.parts?.find((p) => p.inlineData)?.inlineData;
     if (!inlineData?.data) {
-      throw new Error("Gemini API response did not include image data");
+      // No image part usually means Gemini's safety filter blocked the
+      // request (prompt or output) rather than an API failure — surface
+      // the block reason and any text Gemini did return instead of a bare
+      // "no image data" message, so this is diagnosable from logs alone.
+      const blockReason = json.promptFeedback?.blockReason;
+      const finishReason = json.candidates?.[0]?.finishReason;
+      const textPart = json.candidates?.[0]?.content?.parts?.find((p) => p.text)?.text;
+      throw new Error(
+        "Gemini API response did not include image data" +
+          (blockReason ? ` — promptFeedback.blockReason: ${blockReason}` : "") +
+          (finishReason ? ` — finishReason: ${finishReason}` : "") +
+          (textPart ? ` — text: ${textPart}` : "")
+      );
     }
 
     const ext = extensionForMimeType(inlineData.mimeType);
@@ -129,7 +141,9 @@ function extensionForMimeType(mimeType: string | undefined): string {
 interface GeminiGenerateContentResponse {
   candidates?: Array<{
     content?: {
-      parts?: Array<{ inlineData?: { data?: string; mimeType?: string } }>;
+      parts?: Array<{ text?: string; inlineData?: { data?: string; mimeType?: string } }>;
     };
+    finishReason?: string;
   }>;
+  promptFeedback?: { blockReason?: string };
 }
