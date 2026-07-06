@@ -77,6 +77,7 @@ async function generateFromAsset(
             prompt: asset.prompt,
             negativePrompt: asset.negativePrompt,
             videoStructure: asset.videoStructure ? JSON.parse(asset.videoStructure) : undefined,
+            referenceImagePaths,
           })
         : await getImageProvider().generate({
             assetId: asset.id,

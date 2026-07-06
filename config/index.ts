@@ -19,11 +19,15 @@ const EnvSchema = z.object({
 
   IMAGE_GEN_API_KEY: z.string().optional(),
   VIDEO_GEN_API_KEY: z.string().optional(),
+  // Kling AI authenticates with a signed JWT built from an access/secret key
+  // pair rather than a plain bearer token, so it needs its own two vars.
+  KLING_ACCESS_KEY: z.string().optional(),
+  KLING_SECRET_KEY: z.string().optional(),
   // Only providers with an actual implementation in src/services/generation/
   // belong in these enums — an accepted-but-unimplemented value would pass
   // startup validation silently and only fail later, at first use.
   IMAGE_GEN_PROVIDER: z.enum(["local-stub", "stability", "nano-banana"]).default("local-stub"),
-  VIDEO_GEN_PROVIDER: z.enum(["local-stub", "seedance"]).default("local-stub"),
+  VIDEO_GEN_PROVIDER: z.enum(["local-stub", "seedance", "kling"]).default("local-stub"),
 
   FANVUE_ACCOUNT_EMAIL: z.string().optional(),
   FANVUE_PROFILE_URL: z.string().optional(),
@@ -59,6 +63,8 @@ export const config = {
   generation: {
     imageGenApiKey: parsed.data.IMAGE_GEN_API_KEY,
     videoGenApiKey: parsed.data.VIDEO_GEN_API_KEY,
+    klingAccessKey: parsed.data.KLING_ACCESS_KEY,
+    klingSecretKey: parsed.data.KLING_SECRET_KEY,
     imageProvider: parsed.data.IMAGE_GEN_PROVIDER,
     videoProvider: parsed.data.VIDEO_GEN_PROVIDER,
   },

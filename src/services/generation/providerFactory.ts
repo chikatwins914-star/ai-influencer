@@ -4,6 +4,7 @@ import { LocalStubVideoProvider, type VideoGenerationProvider } from "./videoPro
 import { StabilityImageProvider } from "./stabilityImageProvider.js";
 import { NanoBananaImageProvider } from "./nanoBananaImageProvider.js";
 import { SeedanceVideoProvider } from "./seedanceVideoProvider.js";
+import { KlingVideoProvider } from "./klingVideoProvider.js";
 
 /** Selects the image provider per IMAGE_GEN_PROVIDER — defaults to the offline stub. */
 export function getImageProvider(): ImageGenerationProvider {
@@ -22,6 +23,8 @@ export function getVideoProvider(): VideoGenerationProvider {
   switch (config.generation.videoProvider) {
     case "seedance":
       return new SeedanceVideoProvider();
+    case "kling":
+      return new KlingVideoProvider();
     case "local-stub":
       return new LocalStubVideoProvider();
   }
