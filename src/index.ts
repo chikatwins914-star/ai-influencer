@@ -11,11 +11,24 @@ import { calendarRouter } from "./routes/calendar.js";
 import { fanvueRouter } from "./routes/fanvue.js";
 import { analyticsRouter } from "./routes/analytics.js";
 
+// Allows the production dashboard domain, any Vercel preview deployment for
+// the same project (ai-influencer-c1g7-<branch/hash>-<team>.vercel.app —
+// Vercel mints a new one per branch/commit), and local dev.
+const ALLOWED_ORIGIN_PATTERNS = [/^https:\/\/ai-influencer-c1g7(-[\w-]+)?\.vercel\.app$/, /^http:\/\/localhost:3000$/];
+
 const app = express();
-app.use(cors({
-  origin: ["https://ai-influencer-c1g7.vercel.app", "http://localhost:3000"],
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (!origin || ALLOWED_ORIGIN_PATTERNS.some((pattern) => pattern.test(origin))) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 app.get("/health", (_req, res) => {

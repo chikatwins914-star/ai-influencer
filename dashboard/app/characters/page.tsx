@@ -7,11 +7,13 @@ import { PageHeader } from "@/components/PageHeader";
 export default function CharactersPage() {
   const [characters, setCharacters] = useState<Character[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     api.characters
       .list()
       .then(setCharacters)
+      .catch((e) => setError(e instanceof Error ? e.message : "読み込みに失敗しました"))
       .finally(() => setLoading(false));
   }, []);
 
@@ -21,6 +23,8 @@ export default function CharactersPage() {
 
       {loading ? (
         <div className="empty-state">読み込み中...</div>
+      ) : error ? (
+        <div className="empty-state">API通信エラー: {error}</div>
       ) : characters.length === 0 ? (
         <div className="empty-state">キャラクターが登録されていません。database/seed.ts を実行してください。</div>
       ) : (
