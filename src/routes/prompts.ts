@@ -36,10 +36,14 @@ promptRouter.get(
       where: { characterId: query.characterId, ...(query.type ? { type: query.type } : {}) },
       orderBy: { createdAt: "desc" },
       take: 100,
+      include: { captions: { orderBy: { createdAt: "asc" }, take: 1 } },
     });
-    const withMediaUrl = assets.map((asset) => ({
+    const withMediaUrl = assets.map(({ captions, ...asset }) => ({
       ...asset,
       mediaUrl: toMediaUrl(asset.filePath, asset.type === "VIDEO_REEL"),
+      caption: captions[0]
+        ? { text: captions[0].text, hashtags: JSON.parse(captions[0].hashtags) as string[] }
+        : null,
     }));
     res.json(withMediaUrl);
   })
