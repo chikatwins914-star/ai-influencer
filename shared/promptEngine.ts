@@ -76,7 +76,25 @@ export function pickSceneVariant(genre: ContentGenre, seedKey: string): SceneVar
   return variant;
 }
 
-export function buildImagePrompt(character: CharacterForPrompt, genre: ContentGenre, seedKey: string): {
+/**
+ * The set of camera angles generated together for a single scene — one
+ * generation produces one image per entry here, all sharing the same
+ * location/outfit/lighting/action, so a "moment" reads like a real photo
+ * dump instead of a single isolated shot.
+ */
+export const ANGLE_VARIANTS = [
+  "front-facing, eye-level medium shot, direct gaze at camera",
+  "captured from the side, profile angle, full body shot",
+  "captured from a higher angle looking down, dynamic full-body shot",
+  "extreme close-up on the face, capturing detailed expression",
+] as const;
+
+export function buildImagePrompt(
+  character: CharacterForPrompt,
+  genre: ContentGenre,
+  seedKey: string,
+  cameraFramingOverride?: string
+): {
   prompt: string;
   negativePrompt: string;
   variant: SceneVariant;
@@ -90,7 +108,7 @@ export function buildImagePrompt(character: CharacterForPrompt, genre: ContentGe
     `wearing ${variant.outfit}`,
     `at ${variant.location}`,
     variant.lighting,
-    variant.cameraFraming,
+    cameraFramingOverride ?? variant.cameraFraming,
     "an expensive lifestyle moment captured by accident, like a real travel memory rather than a staged photoshoot",
     "ultra-photorealistic smartphone photography shot on an iPhone 17 Pro Max",
     "natural imperfections, realistic asymmetry, authentic candid moment, natural lighting, fox-effect eyelashes",
