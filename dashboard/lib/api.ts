@@ -120,6 +120,10 @@ export interface AnalyticsSnapshot {
   igSaveRate: number | null;
   igRetentionRate: number | null;
   igFollowerGrowth: number | null;
+  ttViews: number | null;
+  ttLikes: number | null;
+  ttFollowerGrowth: number | null;
+  ttEngagementRate: number | null;
   fanvueRevenue: number | null;
   fanvueCvr: number | null;
   ugcDealCloseRate: number | null;
