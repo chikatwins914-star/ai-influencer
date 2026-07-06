@@ -95,6 +95,10 @@ model ContentAsset {
   videoStructure String?     // JSON: {hook, body, ending, cta} for reels
   filePath     String?       // local path once generated, null until then
   status       ContentStatus @default(PLANNED)
+  // Shared across the ANGLE_VARIANTS siblings generated for the same scene
+  // (same location/outfit/lighting/action, different camera angle) — null
+  // for assets that aren't part of a multi-angle scene (e.g. manual uploads).
+  sceneGroupId String?
   aiDisclosureText String    @default("This content features an AI-generated persona.")
   scheduledFor DateTime?
   publishedAt  DateTime?

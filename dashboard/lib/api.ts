@@ -52,6 +52,10 @@ export interface ContentAsset {
   /** Ready-to-post caption + hashtags generated alongside the asset, or
    * null for assets that don't have one (e.g. manually uploaded content). */
   caption: { text: string; hashtags: string[] } | null;
+  /** Shared by every camera-angle variant generated for the same scene, or
+   * null for assets that aren't part of a multi-angle scene (e.g. manual
+   * uploads). Used to group angle siblings and generate them all at once. */
+  sceneGroupId: string | null;
   status: "PLANNED" | "PROMPT_GENERATED" | "ASSET_GENERATED" | "REVIEWED" | "SCHEDULED" | "PUBLISHED" | "REJECTED";
   scheduledFor: string | null;
   publishedAt: string | null;
