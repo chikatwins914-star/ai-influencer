@@ -226,6 +226,13 @@ export const GENRE_VARIANTS: Record<ContentGenre, SceneVariant[]> = {
       cameraFraming: "close-up selfie, slightly high angle",
     },
     {
+      location: "cozy bedroom, soft bedding and pillows visible",
+      outfit: "casual fitted crop top and messy natural hair",
+      action: "lying on the bed looking directly at the camera, relaxed candid TikTok-style selfie video expression",
+      lighting: "soft natural window light",
+      cameraFraming: "close-up selfie, phone held above face",
+    },
+    {
       location: "dorm room window seat with a blanket",
       outfit: "cozy knit sweater",
       action: "candid selfie with a cup of tea, relaxed weekend vibe",
