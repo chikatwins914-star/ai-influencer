@@ -20,11 +20,11 @@ export class NoopFaceSwapProvider implements FaceSwapProvider {
 }
 
 const REPLICATE_BASE_URL = "https://api.replicate.com/v1";
-// Confirm against https://replicate.com/explore (search "face swap") at
-// activation time — pin a specific model version id, and check that
-// model's input schema matches the swap_image/target_image field names
-// used below (they vary between face-swap models on Replicate).
-const MODEL_VERSION = "REPLACE_WITH_CHOSEN_FACE_SWAP_MODEL_VERSION_ID";
+// https://replicate.com/cdingram/face-swap — addressed by owner/name rather
+// than a pinned version hash, so Replicate always runs that model's latest
+// published version for us instead of us tracking a hash that goes stale.
+const MODEL_OWNER = "cdingram";
+const MODEL_NAME = "face-swap";
 const POLL_INTERVAL_MS = 3_000;
 const MAX_POLL_ATTEMPTS = 40; // ~2 minutes
 
@@ -57,17 +57,18 @@ export class ReplicateFaceSwapProvider implements FaceSwapProvider {
   }
 
   private async submit(referencePhotoPath: string, generatedImagePath: string): Promise<string> {
-    const [swapImage, targetImage] = await Promise.all([toDataUri(referencePhotoPath), toDataUri(generatedImagePath)]);
+    const [swapImage, inputImage] = await Promise.all([toDataUri(referencePhotoPath), toDataUri(generatedImagePath)]);
 
-    const response = await fetch(`${REPLICATE_BASE_URL}/predictions`, {
+    // cdingram/face-swap's schema: input_image is the target (base) photo,
+    // swap_image is the face to transplant onto it.
+    const response = await fetch(`${REPLICATE_BASE_URL}/models/${MODEL_OWNER}/${MODEL_NAME}/predictions`, {
       method: "POST",
       headers: {
         Authorization: `Token ${config.generation.faceSwapApiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        version: MODEL_VERSION,
-        input: { swap_image: swapImage, target_image: targetImage },
+        input: { input_image: inputImage, swap_image: swapImage },
       }),
     });
 
