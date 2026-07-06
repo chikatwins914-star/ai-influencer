@@ -79,6 +79,14 @@ export default function DashboardPage() {
     return <div className="p-8">読み込み中...</div>;
   }
 
+  if (error && !character) {
+    return (
+      <div className="p-8 text-center text-red-800">
+        API通信エラー: {error}
+      </div>
+    );
+  }
+
   if (!character) {
     return <div className="p-8 text-center text-gray-500">キャラクターが見つかりません</div>;
   }
