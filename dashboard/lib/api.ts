@@ -49,6 +49,9 @@ export interface ContentAsset {
   /** Public URL to view the generated file (served from the API host), or
    * null until an asset has actually been generated via generate-assets. */
   mediaUrl: string | null;
+  /** Ready-to-post caption + hashtags generated alongside the asset, or
+   * null for assets that don't have one (e.g. manually uploaded content). */
+  caption: { text: string; hashtags: string[] } | null;
   status: "PLANNED" | "PROMPT_GENERATED" | "ASSET_GENERATED" | "REVIEWED" | "SCHEDULED" | "PUBLISHED" | "REJECTED";
   scheduledFor: string | null;
   publishedAt: string | null;

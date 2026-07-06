@@ -35,6 +35,7 @@ export default function ContentPage() {
   const [error, setError] = useState<string | null>(null);
   const [busyAssetId, setBusyAssetId] = useState<string | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const [uploadType, setUploadType] = useState<ContentAsset["type"]>("VIDEO_REEL");
   const [uploadGenre, setUploadGenre] = useState<(typeof GENRES)[number]>("GYM");
   const [uploadCaption, setUploadCaption] = useState("");
@@ -98,6 +99,14 @@ export default function ContentPage() {
     } finally {
       setUploading(false);
     }
+  }
+
+  async function handleCopyCaption(asset: ContentAsset) {
+    if (!asset.caption) return;
+    const text = [asset.caption.text, asset.caption.hashtags.join(" ")].filter(Boolean).join("\n\n");
+    await navigator.clipboard.writeText(text);
+    setCopiedId(asset.id);
+    setTimeout(() => setCopiedId((id) => (id === asset.id ? null : id)), 2000);
   }
 
   async function handleDownload(asset: ContentAsset) {
@@ -230,6 +239,24 @@ export default function ContentPage() {
                       </span>
                     </div>
                     <p style={{ fontSize: 13, lineHeight: 1.6, maxWidth: 640 }}>{asset.prompt}</p>
+                    {asset.caption && (
+                      <div
+                        className="card"
+                        style={{ marginTop: 10, maxWidth: 640, background: "var(--color-bg, #fafafa)" }}
+                      >
+                        <p style={{ fontSize: 13, lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{asset.caption.text}</p>
+                        <p style={{ fontSize: 12, color: "var(--color-turquoise)", marginTop: 6 }}>
+                          {asset.caption.hashtags.join(" ")}
+                        </p>
+                        <button
+                          onClick={() => handleCopyCaption(asset)}
+                          className="btn btn-secondary"
+                          style={{ marginTop: 8, fontSize: 12, padding: "6px 10px" }}
+                        >
+                          {copiedId === asset.id ? "コピーしました ✓" : "キャプションをコピー"}
+                        </button>
+                      </div>
+                    )}
                     {asset.filePath && (
                       <p className="muted mono" style={{ fontSize: 11, marginTop: 6 }}>
                         {asset.filePath}
