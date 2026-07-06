@@ -4,6 +4,7 @@ import { asyncHandler } from "../middleware/errorHandler.js";
 import { persistDailyContentPlan, generateCaption } from "../services/promptService.js";
 import { prisma } from "../utils/prisma.js";
 import { ALL_CONTENT_GENRES } from "../../shared/types.js";
+import { toMediaUrl } from "../services/generation/providerUtils.js";
 
 export const promptRouter = Router();
 
@@ -36,7 +37,11 @@ promptRouter.get(
       orderBy: { createdAt: "desc" },
       take: 100,
     });
-    res.json(assets);
+    const withMediaUrl = assets.map((asset) => ({
+      ...asset,
+      mediaUrl: toMediaUrl(asset.filePath, asset.type === "VIDEO_REEL"),
+    }));
+    res.json(withMediaUrl);
   })
 );
 

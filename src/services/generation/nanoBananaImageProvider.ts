@@ -1,10 +1,8 @@
-import path from "node:path";
 import { config } from "../../../config/index.js";
 import { logger } from "../../utils/logger.js";
 import type { GenerationRequest, GenerationResult, ImageGenerationProvider } from "./imageProvider.js";
-import { assertOk, persistGeneratedFile } from "./providerUtils.js";
+import { IMAGES_ROOT, assertOk, persistGeneratedFile } from "./providerUtils.js";
 
-const OUTPUT_ROOT = path.resolve(process.cwd(), "assets/images");
 const MODEL_ID = "gemini-3.1-flash-image-preview"; // Nano Banana 2
 
 /**
@@ -50,7 +48,7 @@ export class NanoBananaImageProvider implements ImageGenerationProvider {
 
     const ext = extensionForMimeType(inlineData.mimeType);
     const filePath = await persistGeneratedFile(
-      OUTPUT_ROOT,
+      IMAGES_ROOT,
       req.characterId,
       req.assetId,
       ext,

@@ -11,6 +11,7 @@ import { calendarRouter } from "./routes/calendar.js";
 import { fanvueRouter } from "./routes/fanvue.js";
 import { analyticsRouter } from "./routes/analytics.js";
 import { ugcRouter } from "./routes/ugc.js";
+import { IMAGES_ROOT, VIDEOS_ROOT } from "./services/generation/providerUtils.js";
 
 // Allows the production dashboard domain, any Vercel preview deployment for
 // the same project (ai-influencer-c1g7-<branch/hash>-<team>.vercel.app —
@@ -31,6 +32,12 @@ app.use(
   })
 );
 app.use(express.json());
+
+// Serves generated image/video files so the dashboard can render them
+// directly (e.g. /media/images/{characterId}/{assetId}.png). Read-only,
+// no directory listing — express.static only serves files that exist.
+app.use("/media/images", express.static(IMAGES_ROOT));
+app.use("/media/videos", express.static(VIDEOS_ROOT));
 
 app.get("/health", (_req, res) => {
   res.json({ status: "ok", env: config.server.nodeEnv });
