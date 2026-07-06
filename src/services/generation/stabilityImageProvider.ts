@@ -47,6 +47,7 @@ function buildFormData(req: GenerationRequest): FormData {
   form.append("prompt", req.prompt);
   if (req.negativePrompt) form.append("negative_prompt", req.negativePrompt);
   form.append("output_format", "png");
-  form.append("aspect_ratio", "2:3");
+  // 9:16 matches Instagram Reels/Stories and TikTok's vertical format.
+  form.append("aspect_ratio", "9:16");
   return form;
 }

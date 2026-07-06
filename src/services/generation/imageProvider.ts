@@ -87,9 +87,9 @@ function renderPlaceholderSvg(prompt: string): string {
     .map((line, i) => `<tspan x="40" dy="${i === 0 ? 0 : 22}">${escapeXml(line)}</tspan>`)
     .join("");
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1536" viewBox="0 0 1024 1536">
-  <rect width="1024" height="1536" fill="#FFE5EC"/>
-  <rect x="20" y="20" width="984" height="1496" fill="none" stroke="#FF4D6D" stroke-width="4" stroke-dasharray="10,8"/>
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920">
+  <rect width="1080" height="1920" fill="#FFE5EC"/>
+  <rect x="20" y="20" width="1040" height="1880" fill="none" stroke="#FF4D6D" stroke-width="4" stroke-dasharray="10,8"/>
   <text x="40" y="60" font-family="sans-serif" font-size="28" fill="#FF4D6D" font-weight="bold">PLACEHOLDER — local-stub provider</text>
   <text x="40" y="100" font-family="monospace" font-size="16" fill="#333">${tspans}</text>
 </svg>`;
