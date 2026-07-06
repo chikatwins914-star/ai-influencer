@@ -47,14 +47,19 @@ async function getCharacterForPrompt(characterId: string): Promise<CharacterForP
   };
 }
 
+/** Genres enabled for daily rotation (images, videos, and stories) — narrowed
+ * from all 13 down to these per explicit request. Kept as a single source
+ * of truth so images/videos/stories can't drift out of sync with each other. */
+const ENABLED_GENRES: ContentGenre[] = ["ROOM_SELFIE", "BEACH", "CASUAL_DATE"];
+
 /** Picks `count` genres for the day, cycling deterministically off the date so
  * output is spread across genres rather than random-clustered. */
 function pickGenresForDay(count: number, dateISO: string, offset = 0): ContentGenre[] {
   const dayNumber = new Date(dateISO).getTime() / 86_400_000;
-  const start = Math.floor(dayNumber + offset) % ALL_CONTENT_GENRES.length;
+  const start = Math.floor(dayNumber + offset) % ENABLED_GENRES.length;
   const picked: ContentGenre[] = [];
   for (let i = 0; i < count; i++) {
-    const genre = ALL_CONTENT_GENRES[(start + i) % ALL_CONTENT_GENRES.length];
+    const genre = ENABLED_GENRES[(start + i) % ENABLED_GENRES.length];
     if (genre) picked.push(genre);
   }
   return picked;
