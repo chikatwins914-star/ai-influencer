@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../utils/prisma.js";
-import { deserializeCharacter } from "../services/characterService.js";
+import { deserializeCharacter, seedDefaultCharacters } from "../services/characterService.js";
 import { AppError, asyncHandler } from "../middleware/errorHandler.js";
 import { CharacterSheetSchema, toDbCharacterInput } from "../../shared/characterSchema.js";
 
@@ -13,6 +13,19 @@ characterRouter.get(
   asyncHandler(async (_req, res) => {
     const characters = await prisma.character.findMany({ orderBy: { createdAt: "asc" } });
     res.json(characters.map(deserializeCharacter));
+  })
+);
+
+// GET /api/characters/seed-default
+// One-time setup helper for a fresh deploy with an empty database: upserts
+// (by name, so safe to call more than once) every character sheet bundled
+// under assets/characters/. Takes no input, so a GET is used deliberately
+// here for reachability from a plain browser address bar.
+characterRouter.get(
+  "/seed-default",
+  asyncHandler(async (_req, res) => {
+    const result = await seedDefaultCharacters();
+    res.json(result);
   })
 );
 
