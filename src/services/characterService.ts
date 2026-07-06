@@ -1,7 +1,10 @@
-import { readFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
+import path from "node:path";
 import { prisma } from "../utils/prisma.js";
 import { logger } from "../utils/logger.js";
 import { CharacterSheetSchema, toDbCharacterInput, type CharacterSheet } from "../../shared/characterSchema.js";
+
+const CHARACTERS_DIR = path.resolve(process.cwd(), "assets/characters");
 
 /**
  * Loads a character sheet JSON file from disk and validates it.
@@ -42,6 +45,36 @@ export async function upsertCharacter(sheet: CharacterSheet) {
   const created = await prisma.character.create({ data: dbInput });
   logger.info({ characterId: created.id, name: created.name }, "Character created");
   return created;
+}
+
+/**
+ * Loads every character sheet bundled under assets/characters/<name>/<name>.json
+ * and upserts each (by name) into the database. Safe to call repeatedly —
+ * used both by the CLI seed script and by the one-time setup endpoint
+ * (GET /api/characters/seed-default), since a fresh deploy's database has
+ * no rows yet and nothing else populates it.
+ */
+export async function seedDefaultCharacters(): Promise<{ seeded: string[]; skipped: Array<{ dir: string; error: string }> }> {
+  const dirs = await readdir(CHARACTERS_DIR, { withFileTypes: true });
+  const seeded: string[] = [];
+  const skipped: Array<{ dir: string; error: string }> = [];
+
+  for (const dir of dirs) {
+    if (!dir.isDirectory()) continue;
+    const jsonPath = path.join(CHARACTERS_DIR, dir.name, `${dir.name}.json`);
+
+    try {
+      const sheet = await loadCharacterSheet(jsonPath);
+      const character = await upsertCharacter(sheet);
+      seeded.push(character.name);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      logger.error({ err, jsonPath }, "Skipping character — failed to load/seed");
+      skipped.push({ dir: dir.name, error: message });
+    }
+  }
+
+  return { seeded, skipped };
 }
 
 /**
