@@ -1,6 +1,5 @@
-import path from "node:path";
 import { logger } from "../../utils/logger.js";
-import { persistGeneratedFile } from "./providerUtils.js";
+import { IMAGES_ROOT, persistGeneratedFile } from "./providerUtils.js";
 
 export interface GenerationRequest {
   assetId: string;
@@ -19,8 +18,6 @@ export interface ImageGenerationProvider {
   generate(req: GenerationRequest): Promise<GenerationResult>;
 }
 
-const OUTPUT_ROOT = path.resolve(process.cwd(), "assets/images");
-
 /**
  * Offline/dev provider — does not call any external API (works with no
  * network access). Produces a real, openable SVG placeholder file that
@@ -37,7 +34,7 @@ export class LocalStubImageProvider implements ImageGenerationProvider {
 
   async generate(req: GenerationRequest): Promise<GenerationResult> {
     const svg = renderPlaceholderSvg(req.prompt);
-    const filePath = await persistGeneratedFile(OUTPUT_ROOT, req.characterId, req.assetId, "svg", svg);
+    const filePath = await persistGeneratedFile(IMAGES_ROOT, req.characterId, req.assetId, "svg", svg);
 
     logger.info({ assetId: req.assetId, filePath }, "LocalStubImageProvider: placeholder generated");
     return { filePath, provider: this.name };

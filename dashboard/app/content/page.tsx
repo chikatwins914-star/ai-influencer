@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { api, type Character, type ContentAsset } from "@/lib/api";
+import { api, absoluteMediaUrl, downloadMedia, type Character, type ContentAsset } from "@/lib/api";
 import { PageHeader } from "@/components/PageHeader";
 import { StatusPipeline } from "@/components/StatusPipeline";
 
@@ -18,6 +18,7 @@ export default function ContentPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busyAssetId, setBusyAssetId] = useState<string | null>(null);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   async function load() {
     setLoading(true);
@@ -52,6 +53,20 @@ export default function ContentPage() {
       setError(e instanceof Error ? e.message : "生成に失敗しました");
     } finally {
       setBusyAssetId(null);
+    }
+  }
+
+  async function handleDownload(asset: ContentAsset) {
+    if (!asset.mediaUrl) return;
+    setDownloadingId(asset.id);
+    setError(null);
+    try {
+      const ext = asset.mediaUrl.split(".").pop() ?? "bin";
+      await downloadMedia(asset.mediaUrl, `${asset.genre}-${asset.id}.${ext}`);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "ダウンロードに失敗しました");
+    } finally {
+      setDownloadingId(null);
     }
   }
 
@@ -91,6 +106,32 @@ export default function ContentPage() {
             assets.map((asset) => (
               <div className="card" key={asset.id}>
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 16 }}>
+                  {asset.mediaUrl && (
+                    <div style={{ width: 140, flexShrink: 0 }}>
+                      {asset.type === "VIDEO_REEL" ? (
+                        <video
+                          src={absoluteMediaUrl(asset.mediaUrl)}
+                          controls
+                          style={{ width: "100%", borderRadius: 8, background: "#000" }}
+                        />
+                      ) : (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={absoluteMediaUrl(asset.mediaUrl)}
+                          alt={`${asset.genre} preview`}
+                          style={{ width: "100%", borderRadius: 8, objectFit: "cover" }}
+                        />
+                      )}
+                      <button
+                        onClick={() => handleDownload(asset)}
+                        disabled={downloadingId === asset.id}
+                        className="btn btn-secondary"
+                        style={{ marginTop: 8, width: "100%", fontSize: 12, padding: "6px 10px" }}
+                      >
+                        {downloadingId === asset.id ? "保存中..." : "ダウンロード"}
+                      </button>
+                    </div>
+                  )}
                   <div style={{ flex: 1 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
                       <span className="pill pill-turquoise">{TYPE_LABEL[asset.type]}</span>

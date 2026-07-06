@@ -1,7 +1,6 @@
-import path from "node:path";
 import { logger } from "../../utils/logger.js";
 import type { GenerationRequest, GenerationResult } from "./imageProvider.js";
-import { persistGeneratedFile } from "./providerUtils.js";
+import { VIDEOS_ROOT, persistGeneratedFile } from "./providerUtils.js";
 
 export interface VideoGenerationRequest extends GenerationRequest {
   videoStructure?: { hook: string; body: string; ending: string; cta: string } | undefined;
@@ -11,8 +10,6 @@ export interface VideoGenerationProvider {
   readonly name: string;
   generate(req: VideoGenerationRequest): Promise<GenerationResult>;
 }
-
-const OUTPUT_ROOT = path.resolve(process.cwd(), "assets/videos");
 
 /**
  * Offline/dev provider for video. Real video-generation APIs (Runway,
@@ -35,7 +32,7 @@ export class LocalStubVideoProvider implements VideoGenerationProvider {
       note: "Pass `prompt` to your video generation tool of choice (Runway, Pika, etc.) or produce manually using the hook/body/ending/cta structure.",
     };
     const filePath = await persistGeneratedFile(
-      OUTPUT_ROOT,
+      VIDEOS_ROOT,
       req.characterId,
       req.assetId,
       "json",

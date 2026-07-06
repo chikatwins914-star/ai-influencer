@@ -1,10 +1,7 @@
-import path from "node:path";
 import { config } from "../../../config/index.js";
 import { logger } from "../../utils/logger.js";
 import type { GenerationRequest, GenerationResult, ImageGenerationProvider } from "./imageProvider.js";
-import { assertOk, persistGeneratedFile } from "./providerUtils.js";
-
-const OUTPUT_ROOT = path.resolve(process.cwd(), "assets/images");
+import { IMAGES_ROOT, assertOk, persistGeneratedFile } from "./providerUtils.js";
 
 /**
  * Real provider wiring for Stability AI's image generation REST API.
@@ -33,7 +30,7 @@ export class StabilityImageProvider implements ImageGenerationProvider {
 
     const arrayBuffer = await response.arrayBuffer();
     const filePath = await persistGeneratedFile(
-      OUTPUT_ROOT,
+      IMAGES_ROOT,
       req.characterId,
       req.assetId,
       "png",

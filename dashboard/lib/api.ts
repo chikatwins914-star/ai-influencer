@@ -46,10 +46,39 @@ export interface ContentAsset {
   negativePrompt: string | null;
   videoStructure: string | null;
   filePath: string | null;
+  /** Public URL to view the generated file (served from the API host), or
+   * null until an asset has actually been generated via generate-assets. */
+  mediaUrl: string | null;
   status: "PLANNED" | "PROMPT_GENERATED" | "ASSET_GENERATED" | "REVIEWED" | "SCHEDULED" | "PUBLISHED" | "REJECTED";
   scheduledFor: string | null;
   publishedAt: string | null;
   createdAt: string;
+}
+
+/** Prepends the API host to a mediaUrl (e.g. "/media/images/...") so it can
+ * be used directly as an <img>/<video> src or download link from the
+ * dashboard's own origin. */
+export function absoluteMediaUrl(mediaUrl: string): string {
+  return `${API_BASE}${mediaUrl}`;
+}
+
+/** Fetches a generated media file as a blob and triggers a browser download
+ * with the given filename — plain <a download> doesn't reliably force a
+ * save for cross-origin URLs, so this reads the bytes via fetch (the API's
+ * CORS policy already allows this dashboard's origin) and saves via an
+ * object URL instead. */
+export async function downloadMedia(mediaUrl: string, filename: string): Promise<void> {
+  const res = await fetch(absoluteMediaUrl(mediaUrl));
+  if (!res.ok) throw new ApiError(await res.text(), res.status);
+  const blob = await res.blob();
+  const objectUrl = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = objectUrl;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(objectUrl);
 }
 
 export interface CalendarEntry {

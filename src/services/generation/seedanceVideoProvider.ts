@@ -1,11 +1,9 @@
-import path from "node:path";
 import { config } from "../../../config/index.js";
 import { logger } from "../../utils/logger.js";
 import type { GenerationResult } from "./imageProvider.js";
 import type { VideoGenerationProvider, VideoGenerationRequest } from "./videoProvider.js";
-import { assertOk, persistGeneratedFile, sleep } from "./providerUtils.js";
+import { VIDEOS_ROOT, assertOk, persistGeneratedFile, sleep } from "./providerUtils.js";
 
-const OUTPUT_ROOT = path.resolve(process.cwd(), "assets/videos");
 const ARK_BASE_URL = "https://ark.cn-beijing.volces.com/api/v3";
 // Confirm against the Volcengine Ark console at activation time — ByteDance's
 // model ids for new releases can shift as they roll out of preview.
@@ -87,7 +85,7 @@ export class SeedanceVideoProvider implements VideoGenerationProvider {
     const response = await fetch(videoUrl);
     await assertOk(response, "Seedance (Ark) video download");
 
-    return persistGeneratedFile(OUTPUT_ROOT, characterId, assetId, "mp4", Buffer.from(await response.arrayBuffer()));
+    return persistGeneratedFile(VIDEOS_ROOT, characterId, assetId, "mp4", Buffer.from(await response.arrayBuffer()));
   }
 }
 
