@@ -91,7 +91,10 @@ export function buildImagePrompt(character: CharacterForPrompt, genre: ContentGe
     `at ${variant.location}`,
     variant.lighting,
     variant.cameraFraming,
-    "shot on iPhone, natural social-media aesthetic, high detail, photorealistic",
+    "an expensive lifestyle moment captured by accident, like a real travel memory rather than a staged photoshoot",
+    "ultra-photorealistic smartphone photography shot on an iPhone 17 Pro Max",
+    "natural imperfections, realistic asymmetry, authentic posture, visible skin texture, pores, subtle shine on the skin, glossy lips, fox-effect eyelashes",
+    "raw unedited photo aesthetic, no artificial beauty retouching, no studio perfection",
   ].join(", ");
 
   return { prompt, negativePrompt: STANDARD_NEGATIVE_PROMPT, variant };
